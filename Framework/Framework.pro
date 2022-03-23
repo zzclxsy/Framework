@@ -16,6 +16,15 @@ unix {
 }
 !isEmpty(target.path): INSTALLS += target
 
+CONFIG(debug, debug|release) {
+    TARGET = libFrameworkd
+    DESTDIR = $$PWD/../lib/debug
+} else {
+    TARGET = libFramework
+    DESTDIR = $$PWD/../lib/release
+}
+
+
 HEADERS += \
     XCoreApplication.h
 

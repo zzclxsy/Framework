@@ -10,7 +10,16 @@ CONFIG -= app_bundle
 SOURCES += \
         main.cpp
 
-LIBS += -L$$PWD/../Framework/debug/ -llibFramework
+
+
+CONFIG(debug, debug|release) {
+    LIBS += -L$$PWD/../lib/debug/ -llibFrameworkd
+    DESTDIR = $$PWD/../bin/debug
+} else {
+    LIBS += -L$$PWD/../lib/release/ -llibFramework
+    DESTDIR = $$PWD/../bin/release
+}
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin

@@ -21,7 +21,7 @@ private:
     bool m_isSingle;
     std::function<void()> m_callback;
     bool m_isStop;
-    unsigned long long beforeTime;
+    unsigned long long m_beforeTime;
 };
 
 #endif // XTIMEREVENT_H
