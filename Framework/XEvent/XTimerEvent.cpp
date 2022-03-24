@@ -4,6 +4,7 @@
 XTimerEvent::XTimerEvent()
 {
     m_isStop = true;
+    setEventType(XEvent::E_XTimer);
 }
 
 void XTimerEvent::doWork()

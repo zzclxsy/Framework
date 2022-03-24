@@ -7,5 +7,15 @@ XEvent::XEvent()
 
 void XEvent::finishEvent()
 {
-     XCoreApplication::instant()->removeEvent(this);
+    XCoreApplication::instant()->removeEvent(this);
+}
+
+void XEvent::setEventType(E_EventType type)
+{
+    m_type = type;
+}
+
+XEvent::E_EventType XEvent::getEventType()
+{
+    return m_type;
 }

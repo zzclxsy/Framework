@@ -2,6 +2,7 @@
 #define XCOREAPPLICATION_H
 #include <vector>
 class XEvent;
+class XEventLoop;
 class XCoreApplication
 {
 public:
@@ -18,6 +19,7 @@ private:
     std::vector<XEvent *> m_allEvent;
     bool m_isQuit;
     friend XEvent;
+    friend XEventLoop;
 };
 
 #endif // XCOREAPPLICATION_H

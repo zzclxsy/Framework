@@ -1,5 +1,6 @@
 #include "../Framework/XCoreApplication.h"
 #include "../Framework/XEvent/XTimerEvent.h"
+#include "../Framework/XEvent/XEventLoop.h"
 #include <iostream>
 int main(int argc, char *argv[])
 {
@@ -28,5 +29,8 @@ int main(int argc, char *argv[])
     timer3.start();
 
 
+    XEventLoop loop;
+    loop.exec();
+    std::cout << "loop" << std::endl;
     a.exec();
 }

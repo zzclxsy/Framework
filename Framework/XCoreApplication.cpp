@@ -4,13 +4,13 @@ static XCoreApplication *app;
 XCoreApplication::XCoreApplication(int argc, char **argv)
 {
     app = this;
-    m_isQuit = true;
+    m_isQuit = false;
 }
 
 void XCoreApplication::exec()
 {
     static int index = 0;
-    while(m_isQuit)
+    while(!m_isQuit)
     {
         if ((unsigned int)index == m_allEvent.size())
             index = 0;
@@ -22,6 +22,11 @@ void XCoreApplication::exec()
         event->doWork();
         index++;
     }
+}
+
+void XCoreApplication::quit()
+{
+    m_isQuit = true;
 }
 
 void XCoreApplication::addEvent(XEvent *event)
