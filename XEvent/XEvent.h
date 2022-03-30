@@ -13,6 +13,7 @@ public:
 
 public:
     XEvent();
+    //dowork，做一些事件前置处理
     virtual void doWork() = 0;
     void finishEvent();
     E_EventType getEventType();
