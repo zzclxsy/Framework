@@ -2,6 +2,8 @@
 #include <chrono>
 #include <iostream>
 #include <thread>
+#include "../XTime/XTime.h"
+
 XTimerEvent::XTimerEvent()
 {
     mb_stop = true;
@@ -15,8 +17,7 @@ void XTimerEvent::doWork()
     if (mb_stop)
         return;
 
-    std::chrono::time_point<std::chrono::system_clock,std::chrono::milliseconds> tp = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-    unsigned long long currTime=std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()).count();
+    unsigned long long currTime= XTime::instant()->getMsecTimestamp();
 
     //判断线程是否执行完成
     if (mb_threadFinish == false)
@@ -63,16 +64,15 @@ void XTimerEvent::stop()
 void XTimerEvent::start()
 {
     mb_stop = false;
-    std::chrono::time_point<std::chrono::system_clock,std::chrono::milliseconds> tp = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-    unsigned long long tmp=std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()).count();
+    unsigned long long tmp = XTime::instant()->getMsecTimestamp();
     m_beforeTime = tmp;
 }
 
 void XTimerEvent::runThread()
 {
     m_callback();
-    std::chrono::time_point<std::chrono::system_clock,std::chrono::milliseconds> tp = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-    unsigned long long currTime=std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()).count();
+
+    unsigned long long currTime = XTime::instant()->getMsecTimestamp();
     m_beforeTime = currTime;
     mb_threadFinish = true;
 }
