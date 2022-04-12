@@ -1,11 +1,6 @@
 #include "XLogDevice.h"
 
-XLogDevice::XLogDevice()
-{
-    m_currDevice = nullptr;
-}
-
-void XLogDevice::createDevice(E_DeviceType deviceType)
+XLogDevice::XLogDevice(E_DeviceType deviceType)
 {
     switch (deviceType)
     {
@@ -17,13 +12,6 @@ void XLogDevice::createDevice(E_DeviceType deviceType)
     }
 }
 
-void XLogDevice::setDeviceRule(XLogRule *rule)
-{
-    if (m_currDevice)
-        return;
-
-    m_currDevice->setRule(rule);
-}
 
 XLogDeviceBase *XLogDevice::currDevice()
 {

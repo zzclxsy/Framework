@@ -10,9 +10,8 @@ public:
     {
         CONSOLE
     }E_DeviceType;
-    XLogDevice();
-    void createDevice(E_DeviceType deviceType);
-    void setDeviceRule(XLogRule *rule);
+
+    XLogDevice(E_DeviceType deviceType);
 
     XLogDeviceBase *currDevice();
 
