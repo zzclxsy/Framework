@@ -12,22 +12,21 @@
 class XLogDevice;
 class XLogDeviceBase;
 class XLogRule;
-class Debug;
-
 
 class XLogContent
 {
 public:
     XLogContent();
-    void setDevive(XLogDevice *device);
+    void addDevive(XLogDevice *device);
+    void removeDevice(XLogDevice *device);
     void setRule(XLogRule *rule);
     void print(PriorityLevel type, std::string log);
     static XLogContent *instant();
 
 private:
-    friend Debug;
     static XLogContent *mp_instant;
-    XLogDeviceBase *m_currDevice;
+    std::vector<XLogDeviceBase *> m_allDevice;
+    XLogRule *mp_currRule;
 };
 
 class XLogger
