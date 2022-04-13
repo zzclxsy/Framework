@@ -1,38 +1,55 @@
 #include "XLogRule.h"
 #include "XTime/XTime.h"
 
+class XLogRulePrivate
+{
+public:
+    PriorityLevel m_level;
+    std::function<void (const std::string&)> m_printer;
+    std::function<void (const std::string&)> m_custSave;
+    std::string m_debugHeader;
+    std::string m_warnHeader;
+    std::string m_infoHeader;
+    std::string m_errorHeader;
+    std::string m_filePath;
+
+    XLogRule *q_ptr;
+};
 XLogRule::XLogRule()
 {
-    m_printer = nullptr;
-    m_custSave = nullptr;
-    m_filePath = "";
-    m_debugHeader = "<debug> ";
-    m_warnHeader  = "<warn> ";
-    m_infoHeader  = "<info> ";
-    m_errorHeader = "<error> ";
+    d_ptr = new XLogRulePrivate;
+    d_ptr->q_ptr = this;
+
+    d_ptr->m_printer = nullptr;
+    d_ptr->m_custSave = nullptr;
+    d_ptr->m_filePath = "";
+    d_ptr->m_debugHeader = "<debug> ";
+    d_ptr->m_warnHeader  = "<warn> ";
+    d_ptr->m_infoHeader  = "<info> ";
+    d_ptr->m_errorHeader = "<error> ";
 }
 
 void XLogRule::setOutputLevel(PriorityLevel level)
 {
-    m_level = level;
+    d_ptr->m_level = level;
 }
 
 PriorityLevel XLogRule::getOutputLevel()
 {
-    return m_level;
+    return d_ptr->m_level;
 }
 
 void XLogRule::setPrinter(std::function<void (const std::string &)> printer)
 {
-    m_printer = printer;
+    d_ptr->m_printer = printer;
 }
 
 std::string XLogRule::onPacket(const std::string &log)
 {
     std::string pack;
-    if (m_printer != nullptr)
+    if (d_ptr->m_printer != nullptr)
     {
-        m_printer(log);
+        d_ptr->m_printer(log);
         pack = log;
     }
     else
@@ -45,24 +62,64 @@ std::string XLogRule::onPacket(const std::string &log)
 
 bool XLogRule::savePacket(const std::string& log)
 {
-    if (m_custSave == nullptr)
+    if (d_ptr->m_custSave == nullptr)
     {
-        if (m_filePath == "")
+        if (d_ptr->m_filePath == "")
             return false;
 
 
         return true;
     }
-    m_custSave(m_filePath);
+    d_ptr->m_custSave(d_ptr->m_filePath);
     return true;
 }
 
 void XLogRule::setfilePath(const std::string &filePath)
 {
-    m_filePath = filePath;
+    d_ptr->m_filePath = filePath;
 }
 
 void XLogRule::setCustSave(std::function<void (const std::string &)> custSave)
 {
-    m_custSave = custSave;
+    d_ptr->m_custSave = custSave;
+}
+
+void XLogRule::setDebugHeader(const std::string &name)
+{
+    d_ptr->m_debugHeader = name;
+}
+
+const std::string XLogRule::getDebugHeader()
+{
+    return d_ptr->m_debugHeader;
+}
+
+void XLogRule::setInfoHeader(const std::string &name)
+{
+    d_ptr->m_infoHeader = name;
+}
+
+const std::string XLogRule::getInfoHeader()
+{
+    return d_ptr->m_infoHeader;
+}
+
+void XLogRule::setWarnHeader(const std::string &name)
+{
+    d_ptr->m_warnHeader = name;
+}
+
+const std::string XLogRule::getWarnHeader()
+{
+    return d_ptr->m_warnHeader;
+}
+
+void XLogRule::setErrorHeader(const std::string &name)
+{
+    d_ptr->m_errorHeader = name;
+}
+
+const std::string XLogRule::getErrorHeader()
+{
+    return d_ptr->m_errorHeader;
 }

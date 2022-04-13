@@ -8,12 +8,12 @@
 #include <set>
 #include <list>
 #include <stdarg.h>
-
+#include "../global.h"
 class XLogDevice;
 class XLogDeviceBase;
 class XLogRule;
-
-class XLogContent
+class XLogContentPrivate;
+class FRAMEWORK_EXPORT XLogContent
 {
 public:
     XLogContent();
@@ -25,8 +25,7 @@ public:
 
 private:
     static XLogContent *mp_instant;
-    std::vector<XLogDeviceBase *> m_allDevice;
-    XLogRule *mp_currRule;
+    XLogContentPrivate *d_ptr;
 };
 
 class XLogger

@@ -1,7 +1,6 @@
 #ifndef XEVENT_H
 #define XEVENT_H
 
-
 class XEvent
 {
 public:

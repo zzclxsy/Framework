@@ -1,20 +1,30 @@
 #include "XEventLoop.h"
 #include "XCoreApplication.h"
 #include <iostream>
+
+class XEventLoopPrivate
+{
+public:
+    bool m_isQuit;
+    XEventLoop *q_ptr;
+};
+
 XEventLoop::XEventLoop()
 {
-    m_isQuit = false;
+    d_ptr = new XEventLoopPrivate;
+    d_ptr->q_ptr = this;
+    d_ptr->m_isQuit = false;
     setEventType(XEvent::E_XEventLoop);
 }
 
 
 void XEventLoop::exec()
 {
-    std::vector<XEvent *> m_allEvent = XCoreApplication::instant()->m_allEvent;
+    std::vector<XEvent *> m_allEvent = XCoreApplication::instant()->getAllEvent();
 
     int index = 0;
 
-    while(!m_isQuit)
+    while(!d_ptr->m_isQuit)
     {
 
         if ((unsigned int)index == m_allEvent.size())
@@ -39,5 +49,5 @@ void XEventLoop::exec()
 
 void XEventLoop::quit()
 {
-    m_isQuit = true;
+    d_ptr->m_isQuit = true;
 }

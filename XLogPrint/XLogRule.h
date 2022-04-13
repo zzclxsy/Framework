@@ -3,7 +3,10 @@
 #include <string>
 #include "common.h"
 #include <functional>
-class XLogRule
+#include "../global.h"
+
+class XLogRulePrivate;
+class FRAMEWORK_EXPORT XLogRule
 {
 public:
 
@@ -33,26 +36,20 @@ public:
     /**
      * @brief 修改级别描述
      */
-    void setDebugHeader(const std::string& name){m_debugHeader = name;}
-    const std::string getDebugHeader(){return m_debugHeader;}
+    void setDebugHeader(const std::string& name);
+    const std::string getDebugHeader();
 
-    void setInfoHeader(const std::string& name){m_infoHeader = name;}
-    const std::string getInfoHeader(){return m_infoHeader;}
+    void setInfoHeader(const std::string& name);
+    const std::string getInfoHeader();
 
-    void setWarnHeader(const std::string& name){m_warnHeader = name;}
-    const std::string getWarnHeader(){return m_warnHeader;}
+    void setWarnHeader(const std::string& name);
+    const std::string getWarnHeader();
 
-    void setErrorHeader(const std::string& name){m_errorHeader = name;}
-    const std::string getErrorHeader(){return m_errorHeader;}
+    void setErrorHeader(const std::string& name);
+    const std::string getErrorHeader();
+
 private:
-    PriorityLevel m_level;
-    std::function<void (const std::string&)> m_printer;
-    std::function<void (const std::string&)> m_custSave;
-    std::string m_debugHeader;
-    std::string m_warnHeader;
-    std::string m_infoHeader;
-    std::string m_errorHeader;
-    std::string m_filePath;
+    XLogRulePrivate *d_ptr;
 };
 
 #endif // XLOGRULE_H

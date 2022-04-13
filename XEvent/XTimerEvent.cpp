@@ -3,6 +3,7 @@
 #include <iostream>
 #include <thread>
 #include "../XTime/XTime.h"
+#include "boost/thread.hpp"
 
 XTimerEvent::XTimerEvent()
 {
@@ -33,8 +34,7 @@ void XTimerEvent::doWork()
         else
         {
             mb_threadFinish = false;
-            m_callbackThread = std::thread(std::bind(&XTimerEvent::runThread,this));
-            m_callbackThread.detach();
+            boost::thread thread(std::bind(&XTimerEvent::runThread,this));
         }
     }
 }
@@ -59,6 +59,7 @@ void XTimerEvent::setThread(bool isThread)
 void XTimerEvent::stop()
 {
     mb_stop = true;
+    mb_threadFinish = true;
 }
 
 void XTimerEvent::start()
@@ -70,9 +71,9 @@ void XTimerEvent::start()
 
 void XTimerEvent::runThread()
 {
-    m_callback();
-
-    unsigned long long currTime = XTime::instant()->getMsecTimestamp();
-    m_beforeTime = currTime;
-    mb_threadFinish = true;
+    while (mb_threadFinish == false)
+    {
+        m_callback();
+        boost::this_thread::sleep_for(boost::chrono::milliseconds(m_interval));
+    }
 }

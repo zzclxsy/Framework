@@ -4,8 +4,8 @@
 #include "XEvent.h"
 #include <functional>
 #include <thread>
-
-class XTimerEvent : public XEvent
+#include "../global.h"
+class FRAMEWORK_EXPORT XTimerEvent : public XEvent
 {
     typedef struct {
 
@@ -31,7 +31,6 @@ private:
     unsigned long long m_beforeTime;
     bool mb_thread;
     bool mb_threadFinish;
-    std::thread m_callbackThread;
 };
 
 #endif // XTIMEREVENT_H

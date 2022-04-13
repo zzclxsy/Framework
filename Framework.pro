@@ -1,7 +1,7 @@
 CONFIG -= qt
 
 TEMPLATE = lib
-CONFIG += staticlib
+DEFINES += FRAMEWORK_LIBRARY
 
 CONFIG += c++11
 
@@ -20,6 +20,8 @@ unix {
 
 CONFIG(debug, debug|release) {
     TARGET = libFrameworkd
+
+    LIBS += -L$$PWD/ThirdParty/lib_x64/boost/debug -llibboost_thread-vc141-mt-gd-x64-1_67
     DESTDIR = $$PWD/../lib/debug
 } else {
     TARGET = libFramework
@@ -28,8 +30,13 @@ CONFIG(debug, debug|release) {
 
 
 HEADERS += \
-    XCoreApplication.h
+    XCoreApplication.h \
+    global.h
 
 SOURCES += \
     XCoreApplication.cpp
+
+
+#boost库
+INCLUDEPATH += $$PWD/ThirdParty/inc
 

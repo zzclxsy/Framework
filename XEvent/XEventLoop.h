@@ -1,9 +1,10 @@
 #ifndef XEVENTLOOP_H
 #define XEVENTLOOP_H
-
 #include "XEvent.h"
+#include "global.h"
 
-class XEventLoop : public XEvent
+class XEventLoopPrivate;
+class FRAMEWORK_EXPORT XEventLoop : public XEvent
 {
 public:
     XEventLoop();
@@ -12,7 +13,7 @@ public:
     void quit();
 
 private:
-    bool m_isQuit;
+    XEventLoopPrivate *d_ptr;
 };
 
 #endif // XEVENTLOOP_H

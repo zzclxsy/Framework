@@ -3,7 +3,8 @@
 #include "device/XLogDeviceBase.h"
 #include "device/XLogConsoleDevice.h"
 #include "XLogRule.h"
-class XLogDevice
+#include "../global.h"
+class FRAMEWORK_EXPORT XLogDevice
 {
 public:
     typedef enum
