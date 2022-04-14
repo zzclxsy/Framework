@@ -17,7 +17,7 @@ public:
     virtual void doWork();
     void setTimer(int msec, std::function<void()> callbakc, bool isSingle = false);
     void setTrigger(int msec);
-    void setThreadModel(bool isThread);
+    void usingThread(bool isUsing);
 
     void stop();
     void start();

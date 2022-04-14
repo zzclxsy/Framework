@@ -23,5 +23,4 @@
 #define XLOG_DEL_DEVICE XLogContent::instant()->removeDevice
 #define XLOG_SET_RULE   XLogContent::instant()->setRule
 
-#define XLOG_GET_RULE
 #endif // XLOG_H

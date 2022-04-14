@@ -25,8 +25,8 @@ XTimerEvent::XTimerEvent()
     d_ptr->q_ptr = this;
     d_ptr->mb_stop = true;
     d_ptr->mb_thread = false;
-    setEventType(XEvent::E_XTimer);
     d_ptr->mb_threadFinish = true;
+    setEventType(XEvent::E_XTimer);
 }
 
 void XTimerEvent::doWork()
@@ -45,6 +45,12 @@ void XTimerEvent::doWork()
         if (d_ptr->mb_thread == false)
         {
             d_ptr->m_callback();
+            //单次触发情况
+            if (d_ptr->mb_Single)
+            {
+                d_ptr->mb_stop = true;
+                return;;
+            }
             d_ptr->m_beforeTime = currTime;
         }
         else
@@ -67,9 +73,9 @@ void XTimerEvent::setTrigger(int msec)
     d_ptr->m_interval = msec;
 }
 
-void XTimerEvent::setThreadModel(bool isThread)
+void XTimerEvent::usingThread(bool isUsing)
 {
-    d_ptr->mb_thread = isThread;
+    d_ptr->mb_thread = isUsing;
 }
 
 void XTimerEvent::stop()
@@ -90,6 +96,13 @@ void XTimerEvent::runThread()
     while (d_ptr->mb_threadFinish == false)
     {
         d_ptr->m_callback();
+        //单次触发情况
+        if (d_ptr->mb_Single)
+        {
+            d_ptr->mb_threadFinish = true;
+            d_ptr->mb_stop = true;
+            break;
+        }
         boost::this_thread::sleep_for(boost::chrono::milliseconds(d_ptr->m_interval));
     }
 }

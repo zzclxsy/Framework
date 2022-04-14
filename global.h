@@ -3,9 +3,9 @@
 
 #ifdef _MSC_VER
 #if defined(FRAMEWORK_LIBRARY)
-#  define FRAMEWORK_EXPORT _declspec(dllexport)
+    #define FRAMEWORK_EXPORT _declspec(dllexport)
 #else
-#  define FRAMEWORK_EXPORT _declspec(dllimport)
+    #define FRAMEWORK_EXPORT _declspec(dllimport)
 #endif
 #else
     #define FRAMEWORK_EXPORT

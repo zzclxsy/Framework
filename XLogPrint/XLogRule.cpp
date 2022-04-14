@@ -2,22 +2,43 @@
 #include "XTime/XTime.h"
 #include "boost/filesystem.hpp"
 #include <mutex>
+#include <map>
 class XLogRulePrivate
 {
+    typedef  std::function<void (const std::string&)> callback;
+
+public:
+    void addCallback(callback call, std::string& alias)
+    {
+        m_allCallback.insert(std::pair<std::string, callback>(alias, call));
+    }
+    callback findCallback(std::string& alias)
+    {
+        for (std::pair<std::string, callback> it : m_allCallback)
+        {
+            if (it.first == alias)
+                return it.second;
+        }
+        //没找到，反回原本的m_printer
+        return nullptr;
+    }
 public:
     PriorityLevel m_level;
-    std::function<void (const std::string&)> m_printer;
-    std::function<void (const std::string&)> m_custSave;
+    callback m_printer;
+    callback m_custSave;
     std::string m_debugHeader;
     std::string m_warnHeader;
     std::string m_infoHeader;
     std::string m_errorHeader;
     std::string m_filePath;
+    std::string m_fileName;
     boost::filesystem::fstream m_file;
     bool mb_saveFlag;
     std::mutex m_mutex;
+    std::map<std::string, callback> m_allCallback;
     XLogRule *q_ptr;
 };
+
 XLogRule::XLogRule()
 {
     d_ptr = new XLogRulePrivate;
@@ -32,6 +53,7 @@ XLogRule::XLogRule()
     d_ptr->m_infoHeader  = "<info> ";
     d_ptr->m_errorHeader = "<error> ";
     d_ptr->mb_saveFlag = false;
+    d_ptr->m_fileName = "logFile.ini";
 }
 
 XLogRule::~XLogRule()
@@ -49,9 +71,10 @@ PriorityLevel XLogRule::getOutputLevel()
     return d_ptr->m_level;
 }
 
-void XLogRule::setPrinter(std::function<void (const std::string &)> printer)
+void XLogRule::addPrinterFunc(std::function<void (const std::string &)> printer, std::string &alias)
 {
     d_ptr->m_printer = printer;
+    d_ptr->addCallback(printer, alias);
 }
 
 std::string XLogRule::onPacket(const std::string &log)
@@ -68,6 +91,11 @@ std::string XLogRule::onPacket(const std::string &log)
     }
 
     return pack;
+}
+
+void XLogRule::selectPacketFunc(std::string &alias)
+{
+    d_ptr->m_printer = d_ptr->findCallback(alias);
 }
 
 bool XLogRule::savePacket(const std::string& log)
@@ -90,19 +118,29 @@ bool XLogRule::savePacket(const std::string& log)
     return true;
 }
 
-void XLogRule::setfilePath(const std::string &filePath)
+void XLogRule::setFileName(const std::string &fileName)
+{
+    d_ptr->m_fileName = fileName;
+}
+
+void XLogRule::setFilePath(const std::string &filePath)
 {
     if (boost::filesystem::exists(filePath) == false)
         boost::filesystem::create_directories(filePath);
 
     d_ptr->m_filePath = filePath;
-    d_ptr->m_file.open(d_ptr->m_filePath + "/log.ini",std::ios::app);
-    d_ptr->mb_saveFlag = true;
+    startSave();
 }
 
-void XLogRule::setCustSave(std::function<void (const std::string &)> custSave)
+void XLogRule::addCustomSaveFunc(std::function<void (const std::string &)> custSave, std::string &alias)
 {
     d_ptr->m_custSave = custSave;
+    d_ptr->addCallback(custSave, alias);
+}
+
+void XLogRule::selectCustomSaveFunc(std::string &alias)
+{
+    d_ptr->m_custSave = d_ptr->findCallback(alias);
 }
 
 void XLogRule::setDebugHeader(const std::string &name)
@@ -148,9 +186,11 @@ const std::string XLogRule::getErrorHeader()
 void XLogRule::stopSave()
 {
     d_ptr->mb_saveFlag = false;
+    d_ptr->m_file.close();
 }
 
 void XLogRule::startSave()
 {
     d_ptr->mb_saveFlag = true;
+    d_ptr->m_file.open(d_ptr->m_filePath + d_ptr->m_fileName, std::ios::app);
 }
