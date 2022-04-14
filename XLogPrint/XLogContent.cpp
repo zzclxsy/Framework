@@ -25,17 +25,17 @@ XLogContent::XLogContent()
 
 void XLogContent::addDevive(XLogDevice *device)
 {
-    d_ptr->m_allDevice.push_back(device->currDevice());
+    d_ptr->m_allDevice.push_back(device->device());
     if (d_ptr->mp_currRule != nullptr)
-        device->currDevice()->setRule(d_ptr->mp_currRule);
+        device->device()->setRule(d_ptr->mp_currRule);
 }
 
-void XLogContent::removeDevice(XLogDevice *device)
+void XLogContent::removeDevice(XLogDevice *dev)
 {
     auto it = d_ptr->m_allDevice.begin();
     if (it != d_ptr->m_allDevice.end())
     {
-        if ((*it) == device->currDevice())
+        if ((*it) == dev->device())
         {
             d_ptr->m_allDevice.erase(it);
         }
@@ -51,6 +51,11 @@ void XLogContent::setRule(XLogRule *rule)
     {
         dev->setRule(d_ptr->mp_currRule);
     }
+}
+
+XLogRule *XLogContent::getRule()
+{
+    return d_ptr->mp_currRule;
 }
 
 void XLogContent::print(PriorityLevel type, std::string log)

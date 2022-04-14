@@ -20,6 +20,7 @@ public:
     void addDevive(XLogDevice *device);
     void removeDevice(XLogDevice *device);
     void setRule(XLogRule *rule);
+    XLogRule *getRule();
     void print(PriorityLevel type, std::string log);
     static XLogContent *instant();
 

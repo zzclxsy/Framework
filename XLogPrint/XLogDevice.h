@@ -14,7 +14,7 @@ public:
 
     XLogDevice(E_DeviceType deviceType);
 
-    XLogDeviceBase *currDevice();
+    XLogDeviceBase *device();
 
 private:
     XLogDeviceBase *m_currDevice;

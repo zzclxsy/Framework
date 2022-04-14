@@ -1,7 +1,8 @@
 #ifndef XEVENT_H
 #define XEVENT_H
-
-class XEvent
+#include "../global.h"
+class XEventPrivate;
+class FRAMEWORK_EXPORT XEvent
 {
 public:
     typedef enum {
@@ -21,7 +22,7 @@ protected:
     void setEventType(E_EventType type);
 
 private:
-    E_EventType m_type;
+    XEventPrivate *d_ptr;
 };
 
 #endif // XEVENT_H

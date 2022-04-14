@@ -27,9 +27,16 @@ unsigned long long XTime::getSecTimestamp()
 std::string XTime::toTimeString(std::string format)
 {
     time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    std::string s(30, '\0');
-    strftime(&s[0], s.size(), format.c_str(), localtime(&now));
-    return s;
+    struct tm t;
+#ifdef WIN32
+    localtime_s(&t, &now);
+#else
+    localtime_r(&now, &t);
+#endif
+
+    char buff[64] = {0};
+    strftime(buff, sizeof (buff), format.c_str(), &t);
+    return std::string(buff);
 }
 
 XTime *XTime::instant()

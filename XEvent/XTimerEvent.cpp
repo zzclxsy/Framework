@@ -5,35 +5,51 @@
 #include "../XTime/XTime.h"
 #include "boost/thread.hpp"
 
+class XTimerEventPrivate
+{
+public:
+    int m_interval;
+    bool mb_Single;
+    std::function<void()> m_callback;
+    bool mb_stop;
+    unsigned long long m_beforeTime;
+    bool mb_thread;
+    bool mb_threadFinish;
+
+    XTimerEvent *q_ptr;
+};
+
 XTimerEvent::XTimerEvent()
 {
-    mb_stop = true;
-    mb_thread = false;
+    d_ptr = new XTimerEventPrivate;
+    d_ptr->q_ptr = this;
+    d_ptr->mb_stop = true;
+    d_ptr->mb_thread = false;
     setEventType(XEvent::E_XTimer);
-    mb_threadFinish = true;
+    d_ptr->mb_threadFinish = true;
 }
 
 void XTimerEvent::doWork()
 {
-    if (mb_stop)
+    if (d_ptr->mb_stop)
         return;
 
     unsigned long long currTime= XTime::instant()->getMsecTimestamp();
 
     //判断线程是否执行完成
-    if (mb_threadFinish == false)
+    if (d_ptr->mb_threadFinish == false)
         return;
 
-    if (currTime - m_beforeTime >= (unsigned int)m_interval)
+    if (currTime - d_ptr->m_beforeTime >= (unsigned int)d_ptr->m_interval)
     {
-        if (mb_thread == false)
+        if (d_ptr->mb_thread == false)
         {
-            m_callback();
-            m_beforeTime = currTime;
+            d_ptr->m_callback();
+            d_ptr->m_beforeTime = currTime;
         }
         else
         {
-            mb_threadFinish = false;
+            d_ptr->mb_threadFinish = false;
             boost::thread thread(std::bind(&XTimerEvent::runThread,this));
         }
     }
@@ -41,39 +57,39 @@ void XTimerEvent::doWork()
 
 void XTimerEvent::setTimer(int msec, std::function<void ()> callbakc, bool isSingle)
 {
-    m_interval = msec;
-    mb_Single = isSingle;
-    m_callback = callbakc;
+    d_ptr->m_interval = msec;
+    d_ptr->mb_Single = isSingle;
+    d_ptr->m_callback = callbakc;
 }
 
-void XTimerEvent::setInterval(int msec)
+void XTimerEvent::setTrigger(int msec)
 {
-    m_interval = msec;
+    d_ptr->m_interval = msec;
 }
 
-void XTimerEvent::setThread(bool isThread)
+void XTimerEvent::setThreadModel(bool isThread)
 {
-    mb_thread = isThread;
+    d_ptr->mb_thread = isThread;
 }
 
 void XTimerEvent::stop()
 {
-    mb_stop = true;
-    mb_threadFinish = true;
+    d_ptr->mb_stop = true;
+    d_ptr->mb_threadFinish = true;
 }
 
 void XTimerEvent::start()
 {
-    mb_stop = false;
+    d_ptr->mb_stop = false;
     unsigned long long tmp = XTime::instant()->getMsecTimestamp();
-    m_beforeTime = tmp;
+    d_ptr->m_beforeTime = tmp;
 }
 
 void XTimerEvent::runThread()
 {
-    while (mb_threadFinish == false)
+    while (d_ptr->mb_threadFinish == false)
     {
-        m_callback();
-        boost::this_thread::sleep_for(boost::chrono::milliseconds(m_interval));
+        d_ptr->m_callback();
+        boost::this_thread::sleep_for(boost::chrono::milliseconds(d_ptr->m_interval));
     }
 }

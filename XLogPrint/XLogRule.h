@@ -11,6 +11,7 @@ class FRAMEWORK_EXPORT XLogRule
 public:
 
     XLogRule();
+    ~XLogRule();
     /**
      * @brief 设置输出级别
      * @param level
@@ -31,7 +32,7 @@ public:
      */
     bool savePacket(const std::string& log);
     void setfilePath(const std::string& filePath);
-    void setCustSave(std::function<void (const std::string&)> custSave);
+    void setCustSave(std::function<void (const std::string& log)> custSave);
 
     /**
      * @brief 修改级别描述
@@ -47,6 +48,12 @@ public:
 
     void setErrorHeader(const std::string& name);
     const std::string getErrorHeader();
+
+    /**
+     * @brief 开始和停止存log
+     */
+    void stopSave();
+    void startSave();
 
 private:
     XLogRulePrivate *d_ptr;

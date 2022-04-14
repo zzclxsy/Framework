@@ -21,7 +21,7 @@ public:
             return true;
         }
 
-        if (level >mp_rule->getOutputLevel())
+        if (level > mp_rule->getOutputLevel())
             return false;
 
         std::string header;

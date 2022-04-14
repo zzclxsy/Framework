@@ -13,7 +13,7 @@ XLogDevice::XLogDevice(E_DeviceType deviceType)
 }
 
 
-XLogDeviceBase *XLogDevice::currDevice()
+XLogDeviceBase *XLogDevice::device()
 {
     return m_currDevice;
 }
