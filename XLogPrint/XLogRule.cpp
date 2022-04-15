@@ -3,9 +3,10 @@
 #include "boost/filesystem.hpp"
 #include <mutex>
 #include <map>
+#include "iostream"
 class XLogRulePrivate
 {
-    typedef  std::function<void (const std::string&)> callback;
+    typedef  std::function<void (std::string&)> callback;
 
 public:
     void addCallback(callback call, std::string& alias)
@@ -19,7 +20,6 @@ public:
             if (it.first == alias)
                 return it.second;
         }
-        //没找到，反回原本的m_printer
         return nullptr;
     }
 public:
@@ -58,7 +58,7 @@ XLogRule::XLogRule()
 
 XLogRule::~XLogRule()
 {
-    d_ptr->m_file.close();
+    delete d_ptr;
 }
 
 void XLogRule::setOutputLevel(PriorityLevel level)
@@ -71,13 +71,13 @@ PriorityLevel XLogRule::getOutputLevel()
     return d_ptr->m_level;
 }
 
-void XLogRule::addPrinterFunc(std::function<void (const std::string &)> printer, std::string &alias)
+void XLogRule::addPrinterFunc(std::function<void (std::string &)> printer, std::string alias)
 {
     d_ptr->m_printer = printer;
     d_ptr->addCallback(printer, alias);
 }
 
-std::string XLogRule::onPacket(const std::string &log)
+std::string XLogRule::onPacket(std::string &log)
 {
     std::string pack;
     if (d_ptr->m_printer != nullptr)
@@ -98,7 +98,7 @@ void XLogRule::selectPacketFunc(std::string &alias)
     d_ptr->m_printer = d_ptr->findCallback(alias);
 }
 
-bool XLogRule::savePacket(const std::string& log)
+bool XLogRule::savePacket(std::string& log)
 {
     if (d_ptr->mb_saveFlag == false)
         return false;
@@ -110,6 +110,7 @@ bool XLogRule::savePacket(const std::string& log)
 
         d_ptr->m_mutex.lock();
         d_ptr->m_file << log << "\n";
+        d_ptr->m_file.flush();
         d_ptr->m_mutex.unlock();
 
         return true;
@@ -118,21 +119,34 @@ bool XLogRule::savePacket(const std::string& log)
     return true;
 }
 
-void XLogRule::setFileName(const std::string &fileName)
+void XLogRule::setFileName(std::string fileName)
 {
-    d_ptr->m_fileName = fileName;
-}
-
-void XLogRule::setFilePath(const std::string &filePath)
-{
+    std::string filePath;
+    std::string name;
+    for (unsigned short i = 0; i < fileName.size(); i++)
+    {
+        if (fileName[i] == '\\')
+            fileName[i] = '/';
+    }
+    if (fileName.find_last_of('/') == std::string::npos)
+    {
+        filePath = "./";
+        name = fileName;
+    }
+    else
+    {
+        filePath = fileName.substr(0, fileName.find_last_of('/'));
+        name = fileName.substr(fileName.find_last_of('/') + 1);
+    }
     if (boost::filesystem::exists(filePath) == false)
         boost::filesystem::create_directories(filePath);
 
+    d_ptr->m_fileName = name;
     d_ptr->m_filePath = filePath;
     startSave();
 }
 
-void XLogRule::addCustomSaveFunc(std::function<void (const std::string &)> custSave, std::string &alias)
+void XLogRule::addCustomSaveFunc(std::function<void (std::string &)> custSave, std::string alias)
 {
     d_ptr->m_custSave = custSave;
     d_ptr->addCallback(custSave, alias);
@@ -192,5 +206,5 @@ void XLogRule::stopSave()
 void XLogRule::startSave()
 {
     d_ptr->mb_saveFlag = true;
-    d_ptr->m_file.open(d_ptr->m_filePath + d_ptr->m_fileName, std::ios::app);
+    d_ptr->m_file.open(d_ptr->m_filePath +"/"+ d_ptr->m_fileName, std::ios::app);
 }

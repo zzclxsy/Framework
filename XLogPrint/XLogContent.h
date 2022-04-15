@@ -17,10 +17,12 @@ class FRAMEWORK_EXPORT XLogContent
 {
 public:
     XLogContent();
-    void addDevive(XLogDevice *device);
-    void removeDevice(XLogDevice *device);
-    void setRule(XLogRule *rule);
-    XLogRule *getRule();
+    ~XLogContent();
+
+    void addDevive(XLogDevice *device, std::string alias);
+    void removeDevice(std::string alias);
+    XLogDevice *getDevice(std::string alias);
+
     void print(PriorityLevel type, std::string log);
     static XLogContent *instant();
 

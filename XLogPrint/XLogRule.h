@@ -23,18 +23,17 @@ public:
      * @brief 自定义封装log格式
      * @param printer:函数指针
      */
-    void addPrinterFunc(std::function<void (const std::string&)> printer, std::string &alias);
-    std::string onPacket(const std::string& log);
+    void addPrinterFunc(std::function<void (std::string&)> printer, std::string alias);
+    std::string onPacket(std::string& log);
     void selectPacketFunc(std::string &alias);
 
     /**
      * @brief savePacket,自定义储存文件
      * @param log
      */
-    bool savePacket(const std::string& log);
-    void setFilePath(const std::string& filePath);
-    void setFileName(const std::string& fileName);
-    void addCustomSaveFunc(std::function<void (const std::string& log)> custSave, std::string &alias);
+    bool savePacket(std::string& log);
+    void setFileName(std::string fileName);
+    void addCustomSaveFunc(std::function<void (std::string& log)> custSave, std::string alias);
     void selectCustomSaveFunc(std::string &alias);
 
     /**

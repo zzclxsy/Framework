@@ -2,13 +2,13 @@
 #include "XLogDevice.h"
 #include "device/XLogDeviceBase.h"
 #include "XLogRule.h"
-
+#include <mutex>
+#define ADD_DEVICE(NAME, CLASS) std::pair<std::string, XLogDevice *>(NAME, CLASS)
 class XLogContentPrivate
 {
 public:
-    std::vector<XLogDeviceBase *> m_allDevice;
-    XLogRule *mp_currRule;
-
+    std::map<std::string, XLogDevice *> m_allDevice;
+    std::mutex m_mutex;
     XLogContent *q_ptr;
 };
 
@@ -17,55 +17,68 @@ XLogContent::XLogContent()
 {
     d_ptr = new XLogContentPrivate;
     d_ptr->q_ptr = this;
+
     //默认输出到控制台装置
-    d_ptr->m_allDevice.push_back(new XLogConsoleDevice);
+    XLogDevice *device =new XLogDevice(XLogDevice::CONSOLE);
+    device->setRule(new XLogRule);
+
+    d_ptr->m_allDevice.insert(ADD_DEVICE("console", device));
     mp_instant = this;
-    d_ptr->mp_currRule = nullptr;
 }
 
-void XLogContent::addDevive(XLogDevice *device)
+XLogContent::~XLogContent()
 {
-    d_ptr->m_allDevice.push_back(device->device());
-    if (d_ptr->mp_currRule != nullptr)
-        device->device()->setRule(d_ptr->mp_currRule);
+    delete d_ptr;
 }
 
-void XLogContent::removeDevice(XLogDevice *dev)
+void XLogContent::addDevive(XLogDevice *device, std::string alias)
 {
+    d_ptr->m_allDevice.insert(ADD_DEVICE(alias, device));
+}
+
+void XLogContent::removeDevice(std::string alias)
+{
+    d_ptr->m_mutex.lock();
     auto it = d_ptr->m_allDevice.begin();
-    if (it != d_ptr->m_allDevice.end())
+    while (it != d_ptr->m_allDevice.end())
     {
-        if ((*it) == dev->device())
+        if ((*it).first == alias)
         {
+            XLogDevice *desDev = (*it).second;
             d_ptr->m_allDevice.erase(it);
+            delete desDev;
         }
         it++;
     }
+    d_ptr->m_mutex.unlock();
 }
 
-void XLogContent::setRule(XLogRule *rule)
+XLogDevice *XLogContent::getDevice(std::string alias)
 {
-    //所有装置设置相同规则
-    d_ptr->mp_currRule = rule;
-    for (XLogDeviceBase *dev: d_ptr->m_allDevice)
+    auto it = d_ptr->m_allDevice.begin();
+    while (it != d_ptr->m_allDevice.end())
     {
-        dev->setRule(d_ptr->mp_currRule);
+        if ((*it).first == alias)
+            return ((*it).second);
+        it++;
     }
+
+    return nullptr;
 }
 
-XLogRule *XLogContent::getRule()
-{
-    return d_ptr->mp_currRule;
-}
 
 void XLogContent::print(PriorityLevel type, std::string log)
 {
     //输出到所有装置
-    for (XLogDeviceBase *dev: d_ptr->m_allDevice)
+    d_ptr->m_mutex.lock();
+    auto it = d_ptr->m_allDevice.begin();
+    while (it != d_ptr->m_allDevice.end())
     {
         std::string temp = log;
-        dev->PrintLog(temp, type);
+        (*it).second->getDevice()->PrintLog(temp, type);
+        it++;
     }
+    d_ptr->m_mutex.unlock();
 }
 
 XLogContent *XLogContent::instant()

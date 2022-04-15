@@ -1,9 +1,9 @@
 #ifndef XLOGDEVICE_H
 #define XLOGDEVICE_H
-#include "device/XLogDeviceBase.h"
-#include "device/XLogConsoleDevice.h"
-#include "XLogRule.h"
 #include "../global.h"
+class XLogRule;
+class XLogDeviceBase;
+class XLogDevicePrivate;
 class FRAMEWORK_EXPORT XLogDevice
 {
 public:
@@ -13,11 +13,15 @@ public:
     }E_DeviceType;
 
     XLogDevice(E_DeviceType deviceType);
+    ~XLogDevice();
 
-    XLogDeviceBase *device();
+    void setRule(XLogRule *rule);
+    XLogRule *getRule();
+
+    XLogDeviceBase *getDevice();
 
 private:
-    XLogDeviceBase *m_currDevice;
+    XLogDevicePrivate *d_ptr;
 };
 
 #endif // XLOGDEVICE_H

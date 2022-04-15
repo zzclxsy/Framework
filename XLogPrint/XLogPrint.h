@@ -19,8 +19,7 @@
 #define XERROR          XLogger(PriorityLevel::ERROR)
 #define XERROR_PRINT    XLogger(PriorityLevel::ERROR).write
 
-#define XLOG_ADD_DEVICE XLogContent::instant()->addDevive
-#define XLOG_DEL_DEVICE XLogContent::instant()->removeDevice
-#define XLOG_SET_RULE   XLogContent::instant()->setRule
-
+#define XLOG_Add_Device(XLogDevice, alias)  XLogContent::instant()->addDevive(XLogDevice, alias)
+#define XLOG_Del_Device(alias)              XLogContent::instant()->removeDevice(alias)
+#define XLOG_Get_Device(alias)              XLogContent::instant()->getDevice(alias)
 #endif // XLOG_H
