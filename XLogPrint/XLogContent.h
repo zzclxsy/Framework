@@ -23,7 +23,7 @@ public:
     void removeDevice(std::string alias);
     XLogDevice *getDevice(std::string alias);
 
-    void print(PriorityLevel type, std::string log);
+    void print(PriorityLevel type, std::string log, std::string &devName);
     static XLogContent *instant();
 
 private:
@@ -34,13 +34,14 @@ private:
 class XLogger
 {
 public:
-    XLogger(PriorityLevel type)
+    XLogger(PriorityLevel type, std::string devName = "")
     {
         m_type = type;
+        m_devName = devName;
     }
     ~XLogger()
     {
-        XLogContent::instant()->print(m_type, m_debugLog.str());
+        XLogContent::instant()->print(m_type, m_debugLog.str(), m_devName);
     }
 
     template<typename T>
@@ -141,6 +142,7 @@ public:
 private:
     std::stringstream m_debugLog;
     PriorityLevel m_type;
+    std::string m_devName;
 };
 
 #endif // XLOGCONTENT_H

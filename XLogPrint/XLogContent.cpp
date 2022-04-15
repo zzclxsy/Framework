@@ -67,9 +67,18 @@ XLogDevice *XLogContent::getDevice(std::string alias)
 }
 
 
-void XLogContent::print(PriorityLevel type, std::string log)
+void XLogContent::print(PriorityLevel type, std::string log, std::string &devName)
 {
-    //输出到所有装置
+    //指定装置
+    if (devName != "")
+    {
+        XLogDevice * dev = getDevice(devName);
+        if (dev !=nullptr)
+            dev->getDevice()->PrintLog(log, type);
+        return;
+    }
+
+    //非指定装置，输出到所有装置
     d_ptr->m_mutex.lock();
     auto it = d_ptr->m_allDevice.begin();
     while (it != d_ptr->m_allDevice.end())
