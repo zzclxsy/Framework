@@ -1,6 +1,8 @@
 CONFIG -= qt
 
 TEMPLATE = lib
+CONFIG += staticlib
+
 DEFINES += FRAMEWORK_LIBRARY
 
 CONFIG += c++11
@@ -8,7 +10,7 @@ CONFIG += c++11
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
-
+DEFINES+=StaticLib
 include(./XEvent/XEvent.pri)
 include(./XTime/XTime.pri)
 include(./XLogPrint/XLogPrint.pri)
@@ -20,8 +22,6 @@ unix {
 
 CONFIG(debug, debug|release) {
     TARGET = libFrameworkd
-
-    LIBS += -L$$PWD/ThirdParty/lib_x64/boost/debug -llibboost_thread-vc141-mt-gd-x64-1_67
     DESTDIR = $$PWD/../lib/debug
 } else {
     TARGET = libFramework
@@ -30,13 +30,11 @@ CONFIG(debug, debug|release) {
 
 
 HEADERS += \
-    XCoreApplication.h \
-    global.h
+    XCoreApplication.h
 
 SOURCES += \
     XCoreApplication.cpp
 
 
 #boost库
-INCLUDEPATH += $$PWD/ThirdParty/inc
-
+INCLUDEPATH += $$PWD/../ThirdParty/inc

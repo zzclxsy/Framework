@@ -1,8 +1,7 @@
 #ifndef XTIME_H
 #define XTIME_H
 #include <string>
-#include "../global.h"
-class FRAMEWORK_EXPORT XTime
+class  XTime
 {
 public:
     XTime();

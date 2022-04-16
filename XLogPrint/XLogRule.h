@@ -3,10 +3,9 @@
 #include <string>
 #include "common.h"
 #include <functional>
-#include "../global.h"
 
 class XLogRulePrivate;
-class FRAMEWORK_EXPORT XLogRule
+class XLogRule
 {
 public:
 

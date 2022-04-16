@@ -4,10 +4,9 @@
 #include "XEvent.h"
 #include <functional>
 #include <thread>
-#include "../global.h"
 
 class XTimerEventPrivate;
-class FRAMEWORK_EXPORT XTimerEvent : public XEvent
+class XTimerEvent : public XEvent
 {
     typedef struct {
 

@@ -1,11 +1,10 @@
 #ifndef XCOREAPPLICATION_H
 #define XCOREAPPLICATION_H
 #include <vector>
-#include "global.h"
 class XEvent;
 class XEventLoop;
 class XCoreApplicationPrivate;
-class FRAMEWORK_EXPORT XCoreApplication
+class  XCoreApplication
 {
 public:
     XCoreApplication(int argc, char **argv);

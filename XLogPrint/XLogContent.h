@@ -8,12 +8,12 @@
 #include <set>
 #include <list>
 #include <stdarg.h>
-#include "../global.h"
+
 class XLogDevice;
 class XLogDeviceBase;
 class XLogRule;
 class XLogContentPrivate;
-class FRAMEWORK_EXPORT XLogContent
+class XLogContent
 {
 public:
     XLogContent();
