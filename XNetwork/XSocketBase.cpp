@@ -1,6 +1,12 @@
 #include "XSocketBase.h"
 
-XSocketBase::XSocketBase()
+
+JHPacketCodec::JHPacketCodec()
+{
+
+}
+
+JHPacketCodec::~JHPacketCodec()
 {
 
 }
