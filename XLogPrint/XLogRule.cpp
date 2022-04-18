@@ -4,6 +4,7 @@
 #include <mutex>
 #include <map>
 #include "iostream"
+#include <fstream>
 class XLogRulePrivate
 {
     typedef  std::function<void (std::string&)> callback;
@@ -32,7 +33,7 @@ public:
     std::string m_errorHeader;
     std::string m_filePath;
     std::string m_fileName;
-    boost::filesystem::fstream m_file;
+    std::fstream m_file;
     bool mb_saveFlag;
     std::mutex m_mutex;
     std::map<std::string, callback> m_allCallback;

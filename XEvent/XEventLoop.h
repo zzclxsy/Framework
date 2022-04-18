@@ -1,10 +1,9 @@
 #ifndef XEVENTLOOP_H
 #define XEVENTLOOP_H
 #include "XEvent.h"
-#include "global.h"
 
 class XEventLoopPrivate;
-class FRAMEWORK_EXPORT XEventLoop : public XEvent
+class XEventLoop : public XEvent
 {
 public:
     XEventLoop();

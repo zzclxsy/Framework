@@ -1,8 +1,7 @@
 #ifndef XEVENT_H
 #define XEVENT_H
-#include "../global.h"
 class XEventPrivate;
-class FRAMEWORK_EXPORT XEvent
+class XEvent
 {
 public:
     typedef enum {

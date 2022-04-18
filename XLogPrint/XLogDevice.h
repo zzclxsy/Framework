@@ -1,10 +1,10 @@
 #ifndef XLOGDEVICE_H
 #define XLOGDEVICE_H
-#include "../global.h"
+
 class XLogRule;
 class XLogDeviceBase;
 class XLogDevicePrivate;
-class FRAMEWORK_EXPORT XLogDevice
+class XLogDevice
 {
 public:
     typedef enum
