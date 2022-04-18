@@ -12,6 +12,7 @@ CONFIG += c++11
 include(./XEvent/XEvent.pri)
 include(./XTime/XTime.pri)
 include(./XLogPrint/XLogPrint.pri)
+include(./XNetwork/XNetwork.pri)
 # Default rules for deployment.
 unix {
     target.path = $$[QT_INSTALL_PLUGINS]/generic
