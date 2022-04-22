@@ -31,10 +31,12 @@ CONFIG(debug, debug|release) {
 
 
 HEADERS += \
-    XCoreApplication.h
+    XCoreApplication.h \
+    XRingBuffer.h
 
 SOURCES += \
-    XCoreApplication.cpp
+    XCoreApplication.cpp \
+    XRingBuffer.cpp
 
 
 #boost库

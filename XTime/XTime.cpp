@@ -1,6 +1,7 @@
 #include "XTime.h"
 #include <chrono>
 #include <iostream>
+#include <thread>
 using namespace std;
 XTime* XTime::m_instant = nullptr;
 XTime::XTime()
@@ -37,6 +38,16 @@ std::string XTime::toTimeString(std::string format)
     char buff[64] = {0};
     strftime(buff, sizeof (buff), format.c_str(), &t);
     return std::string(buff);
+}
+
+void XTime::msleep(int msec)
+{
+    std::this_thread::sleep_for(std::chrono::milliseconds(msec));
+}
+
+void XTime::sleep(int sec)
+{
+    std::this_thread::sleep_for(std::chrono::seconds(sec));
 }
 
 XTime *XTime::instant()
