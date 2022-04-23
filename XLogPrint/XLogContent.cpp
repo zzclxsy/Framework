@@ -67,7 +67,7 @@ XLogDevice *XLogContent::getDevice(std::string alias)
 }
 
 
-void XLogContent::print(PriorityLevel type, std::string log, std::string &devName)
+void XLogContent::print(logLevel type, std::string log, std::string &devName)
 {
     //指定装置
     if (devName != "")

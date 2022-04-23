@@ -15,8 +15,8 @@ public:
      * @brief 设置输出级别
      * @param level
      */
-    void setOutputLevel(PriorityLevel level);
-    PriorityLevel getOutputLevel();
+    void setOutputLevel(logLevel level);
+    logLevel getOutputLevel();
 
     /**
      * @brief 自定义封装log格式

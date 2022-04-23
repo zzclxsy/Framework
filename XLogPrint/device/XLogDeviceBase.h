@@ -14,7 +14,7 @@ public:
     void setRule(XLogRule *rule){mp_rule = rule;}
 
     //基类做最基本的数据处理
-    virtual bool PrintLog(std::string& log, PriorityLevel level)
+    virtual bool PrintLog(std::string& log, logLevel level)
     {
         if (mp_rule == nullptr)
         {
@@ -27,19 +27,19 @@ public:
         std::string header;
         switch (level)
         {
-        case PriorityLevel::DEBUG:
+        case logLevel::E_DEBUG:
             header = mp_rule->getDebugHeader();
             break;
 
-        case PriorityLevel::INFO:
+        case logLevel::E_INFO:
             header = mp_rule->getInfoHeader();
             break;
 
-        case PriorityLevel::WARN:
+        case logLevel::E_WARN:
             header = mp_rule->getWarnHeader();
             break;
 
-        case PriorityLevel::ERROR:
+        case logLevel::E_ERROR:
             header = mp_rule->getErrorHeader();
             break;
         default:
