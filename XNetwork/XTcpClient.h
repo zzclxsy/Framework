@@ -4,7 +4,7 @@
 #include "XSocketBase.h"
 
 class XTcpClientPrivate;
-class XTcpClient
+class XTcpClient:public XSocketClient
 {
 
 public:
@@ -18,6 +18,16 @@ public:
 
 private:
     void WorkerProc();
+    void ConnectAsync();
+
+    void RecvDataAsync();
+    void RecvDataAsyncCustom();
+
+    void OnConnect(const boost::system::error_code& error);
+    void OnRecv(const boost::system::error_code& error, size_t bytesTransferred);
+    void OnRecvCustom(const boost::system::error_code& error, size_t bytesTransferred);
+    void OnSend(const boost::system::error_code& error, size_t bytesTransferred);
+    void OnDisconnect();
 
 private:
     XTcpClientPrivate *d_ptr;

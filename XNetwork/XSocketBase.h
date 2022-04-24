@@ -2,11 +2,28 @@
 #define XSOCKETBASE_H
 
 #include <string>
-#include <boost/asio.hpp>
+#include "boost/asio.hpp"
 #include <functional>
-#include "../XRingBuffer.h"
-#include "../XLogPrint/XLogPrint.h"
+#include "XRingBuffer.h"
+
 typedef boost::asio::io_context IOContext;
+
+
+class XSocketSession
+{
+public:
+    XSocketSession();
+    virtual ~XSocketSession();
+
+    virtual std::string RemoteIpAddress() = 0;
+    virtual int RemotePort() = 0;
+
+    virtual int RecvData(char * buffer, int length) = 0;
+    virtual int SendData(const char * data, int length) = 0;
+    virtual int RecvDataAsync() = 0;
+    virtual int SendDataAsync(const char * data, int length) = 0;
+};
+
 
 class XPacketCodec
 {
@@ -26,7 +43,7 @@ class XSocketClient
 {
 public:
     XSocketClient();
-    virtual ~XSocketClient();
+    virtual ~XSocketClient(){};
 
     typedef std::function<int (const char *, int)> DataHandler;
 
@@ -58,6 +75,31 @@ protected:
     char * m_recvBuffer;
     int m_dataSize;
     XRingBuffer m_dataBuffer;
+};
+
+class XSocketServer
+{
+public:
+    XSocketServer();
+    virtual ~XSocketServer(){};
+
+    typedef std::function<int (XSocketSession *, const char *, int)> DataHandler;
+
+    void SetIpAddress(const std::string& ip);
+    void SetPort(int port);
+    void SetDataHandler(DataHandler handler);
+    void SetPacketCodec(XPacketCodec * decoder);
+
+    virtual bool Start() = 0;
+    virtual void Stop() = 0;
+
+protected:
+    IOContext m_ioctx;
+
+    std::string m_bindIp;
+    int m_bindPort;
+    DataHandler m_handler;
+    XPacketCodec * m_codec;
 };
 
 #endif // XSOCKETBASE_H
