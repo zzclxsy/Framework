@@ -41,11 +41,11 @@ bool XTcpClient::Start()
         }
         catch(std::exception e)
         {
-            XERROR << "std::exception from JHTcpClient.WorkerProc catched:" << e.what();
+            XERROR << "std::exception from XTcpClient.WorkerProc catched:" << e.what();
         }
         catch(...)
         {
-            XERROR << "unhandled exception from JHTcpClient.WorkerProc catched.";
+            XERROR << "unhandled exception from XTcpClient.WorkerProc catched.";
         }
     });
 
@@ -72,20 +72,24 @@ void XTcpClient::Stop()
 
 int XTcpClient::SendData(const char *data, int length)
 {
-    assert(d_ptr->m_sk && m_codec && data && length);
+    auto sendCallBack = [this](char * p, int len)
+    {
+        try
+        {
+            d_ptr->m_sk->send(boost::asio::buffer(p, len));
+        }
+        catch(...)
+        {
+           this->OnDisconnect();
+        }
+    };
 
     if (d_ptr->m_sk->is_open())
     {
-        m_codec->Encode((char *)data, length, [this](char * p, int len){
-            try
-            {
-                this->d_ptr->m_sk->send(boost::asio::buffer(p, len));
-            }
-            catch(...)
-            {
-               this->OnDisconnect();
-            }
-        });
+        if (m_codec)
+            m_codec->Encode((char *)data, length, sendCallBack);
+        else
+            sendCallBack((char *)data, length);
 
         return length;
     }
@@ -94,9 +98,7 @@ int XTcpClient::SendData(const char *data, int length)
 
 int XTcpClient::SendDataAsync(const char *data, int length)
 {
-    assert(d_ptr->m_sk && data && length);
-
-    if (d_ptr->m_sk->is_open())
+    auto sendCallBack = [this](char * data, int length)
     {
         d_ptr->m_sk->async_send(
                     boost::asio::buffer(data, length),
@@ -104,6 +106,15 @@ int XTcpClient::SendDataAsync(const char *data, int length)
                                 this,
                                 boost::asio::placeholders::error,
                                 boost::asio::placeholders::bytes_transferred));
+    };
+
+    if (d_ptr->m_sk->is_open())
+    {
+        if (m_codec)
+            m_codec->Encode((char *)data, length, sendCallBack);
+        else
+            sendCallBack((char *)data, length);
+
         return length;
     }
     return -1;
@@ -132,12 +143,12 @@ void XTcpClient::OnConnect(const boost::system::error_code &error)
 {
     if (error)
     {
-        XERROR << "JHTcpClient::OnConnect failed." <<m_serverIp <<m_serverPort << "error code:" << error;
+        XERROR << "XTcpClient::OnConnect failed." <<m_serverIp <<m_serverPort << "error code:" << error;
         this->ConnectAsync();
     }
     else
     {
-        XDEBUG << "JHTcpClient::OnConnect\t" <<m_serverIp <<m_serverPort;
+        XDEBUG << "XTcpClient::OnConnect\t" <<m_serverIp <<m_serverPort;
         m_handler ? this->RecvDataAsyncCustom() : this->RecvDataAsync();
     }
 }
@@ -166,7 +177,7 @@ void XTcpClient::OnRecv(const boost::system::error_code &error, size_t bytesTran
 {
     if (error)
     {
-        XERROR << "JHTcpClient::OnRecv1 failed, error code:" << error;
+        XERROR << "XTcpClient::OnRecv failed, error code:" << error;
         this->OnDisconnect();
         return;
     }
@@ -201,7 +212,7 @@ void XTcpClient::OnRecvCustom(const boost::system::error_code &error, size_t byt
 {
     if (error)
     {
-        XERROR << "JHTcpClient::OnRecv2 failed, error code:" << error;
+        XERROR << "XTcpClient::OnRecvCustom failed, error code:" << error;
         this->OnDisconnect();
         return;
     }
@@ -235,18 +246,18 @@ void XTcpClient::OnSend(const boost::system::error_code &error, size_t bytesTran
 {
     if (error)
     {
-        XERROR << "JHTcpClient::OnSend failed, error code:" << error;
+        XERROR << "XTcpClient::OnSend failed, error code:" << error;
         this->OnDisconnect();
     }
     else if (bytesTransferred <= 0)
     {
-        XERROR << "JHTcpClient::OnSend, error bytes transferred";
+        XERROR << "XTcpClient::OnSend, error bytes transferred";
     }
 }
 
 void XTcpClient::OnDisconnect()
 {
-    XERROR << "JHTcpClient::OnDisconnect ";
+    XERROR << "XTcpClient::OnDisconnect ";
     d_ptr->m_sk->close();
     this->ConnectAsync();
 }

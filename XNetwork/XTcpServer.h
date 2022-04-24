@@ -29,6 +29,8 @@ public:
 
     virtual std::string RemoteIpAddress();
     virtual int RemotePort();
+    virtual int SendData(const char * data, int length);
+    virtual int SendDataAsync(const char * data, int length);
 
 protected:
     int Start();
@@ -37,10 +39,8 @@ protected:
     void WorkerProc();
 
     virtual int RecvData(char * buffer, int length);
-    virtual int SendData(const char * data, int length);
-
     virtual int RecvDataAsync();
-    virtual int SendDataAsync(const char * data, int length);
+
 
 protected:
     void OnRecv(const boost::system::error_code& error, size_t bytesTransferred);
@@ -73,6 +73,7 @@ public:
 
     virtual bool Start();
     virtual void Stop();
+    std::set<XTcpSession *> totalTcpSession();
 
 protected:
     void WorkerProc();

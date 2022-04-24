@@ -24,7 +24,6 @@ public:
     virtual int SendDataAsync(const char * data, int length) = 0;
 };
 
-
 class XPacketCodec
 {
 public:
@@ -36,8 +35,6 @@ public:
     virtual int Decode(char * data, int length, Callback callback) = 0;
     virtual int Encode(char * data, int length, Callback callback) = 0;
 };
-
-
 
 class XSocketClient
 {
