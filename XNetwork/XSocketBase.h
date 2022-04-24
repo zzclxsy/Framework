@@ -12,8 +12,8 @@ typedef boost::asio::io_context IOContext;
 class XSocketSession
 {
 public:
-    XSocketSession();
-    virtual ~XSocketSession();
+    XSocketSession(){};
+    virtual ~XSocketSession(){};
 
     virtual std::string RemoteIpAddress() = 0;
     virtual int RemotePort() = 0;
