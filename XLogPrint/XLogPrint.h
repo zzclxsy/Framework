@@ -1,8 +1,8 @@
 #ifndef XLOG_H
 #define XLOG_H
-#include "./XLogContent.h"
-#include "./XLogDevice.h"
-#include "./XLogRule.h"
+#include "XLogContent.h"
+#include "XLogDevice.h"
+#include "XLogRule.h"
 
 #include "common.h"
 

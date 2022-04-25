@@ -4,11 +4,12 @@
 #include <set>
 #include <queue>
 
+typedef boost::asio::ip::tcp TCP;
+class XTcpSessionPrivate;
 class XTcpSession
         : public XSocketSession
 {
     friend class XTcpServer;
-    typedef boost::asio::ip::tcp TCP;
 
 public:
     XTcpSession(XTcpServer * tcpServer);
@@ -22,10 +23,7 @@ public:
         virtual void OnDisconnect(XTcpSession * session) = 0;
     };
 
-    TCP::socket& socket()
-    {
-        return m_socket;
-    }
+    TCP::socket &socket();
 
     virtual std::string RemoteIpAddress();
     virtual int RemotePort();
@@ -47,25 +45,17 @@ protected:
     void OnSend(const boost::system::error_code& error, size_t bytesTransferred);
 
 protected:
-    TCP::socket m_socket;
-    XTcpServer * m_tcpServer;
-    XPacketCodec * m_codec;
+    XTcpSessionPrivate *d_ptr;
 
-    std::thread * m_worker;
-    bool m_running;
-
-    static const int TCP_RECV_BUFFER_SIZE = 131072;
-
-    char m_recvBuffer[TCP_RECV_BUFFER_SIZE];
-    int m_dataSize;
 };
 
-
+class XTcpServerPrivate;
 class XTcpServer
         : public XSocketServer
         , public XTcpSession::Callback
 {
     friend class XTcpSession;
+    friend class XTcpSessionPrivate;
     typedef boost::asio::ip::tcp TCP;
 public:
     XTcpServer();
@@ -73,7 +63,7 @@ public:
 
     virtual bool Start();
     virtual void Stop();
-    std::set<XTcpSession *> totalTcpSession();
+    std::queue<XTcpSession *> totalTcpSession();
 
 protected:
     void WorkerProc();
@@ -86,13 +76,9 @@ protected:
     virtual void OnDisconnect(XTcpSession * session);
 
 protected:
-    std::thread * m_worker;
-    bool m_running;
-
-    TCP::acceptor * m_acceptor;
-    std::set<XTcpSession *> m_sessionMap;
-    std::queue<XTcpSession *> m_trash;
-    std::mutex m_lock;
+    XTcpServerPrivate *d_ptr;
 };
+
+
 
 #endif // XTCPSERVER_H

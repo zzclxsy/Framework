@@ -9,7 +9,8 @@ class XLogDevice
 public:
     typedef enum
     {
-        CONSOLE
+        CONSOLE,
+        TCP_DEVICE
     }E_DeviceType;
 
     XLogDevice(E_DeviceType deviceType);

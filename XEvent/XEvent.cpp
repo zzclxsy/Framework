@@ -1,5 +1,5 @@
 #include "XEvent.h"
-#include "../Framework/XCoreApplication.h"
+#include "XCoreApplication.h"
 
 class XEventPrivate
 {
@@ -12,12 +12,12 @@ XEvent::XEvent()
 {
     d_ptr = new XEventPrivate;
     d_ptr->q_ptr = this;
-    XCoreApplication::instant()->addEvent(this);
+    XCoreApplication::GetApp()->addEvent(this);
 }
 
 void XEvent::finishEvent()
 {
-    XCoreApplication::instant()->removeEvent(this);
+    XCoreApplication::GetApp()->removeEvent(this);
 }
 
 void XEvent::setEventType(E_EventType type)

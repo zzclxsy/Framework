@@ -15,6 +15,8 @@ include(./XEvent/XEvent.pri)
 include(./XTime/XTime.pri)
 include(./XLogPrint/XLogPrint.pri)
 include(./XNetwork/XNetwork.pri)
+include(./JsonCpp/JsonCpp.pri)
+include(./XApi/XApi.pri)
 # Default rules for deployment.
 unix {
     target.path = $$[QT_INSTALL_PLUGINS]/generic
@@ -32,12 +34,15 @@ CONFIG(debug, debug|release) {
 
 HEADERS += \
     XCoreApplication.h \
+    XObjectManager.h \
     XRingBuffer.h
 
 SOURCES += \
     XCoreApplication.cpp \
+    XObjectManager.cpp \
     XRingBuffer.cpp
 
 
 #boost库
 INCLUDEPATH += $$PWD/../ThirdParty/inc
+INCLUDEPATH += $$PWD/JsonCpp/include

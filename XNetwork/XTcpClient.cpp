@@ -23,6 +23,12 @@ XTcpClient::XTcpClient()
     d_ptr->m_sk= nullptr;
 }
 
+XTcpClient::~XTcpClient()
+{
+    Stop();
+    delete d_ptr;
+}
+
 bool XTcpClient::Start()
 {
     if (d_ptr->m_worker != nullptr)

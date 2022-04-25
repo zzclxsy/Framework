@@ -20,7 +20,7 @@ XEventLoop::XEventLoop()
 
 void XEventLoop::exec()
 {
-    std::vector<XEvent *> m_allEvent = XCoreApplication::instant()->getAllEvent();
+    std::vector<XEvent *> m_allEvent = XCoreApplication::GetApp()->getAllEvent();
 
     int index = 0;
 

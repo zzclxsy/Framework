@@ -9,7 +9,7 @@ class XTcpClient:public XSocketClient
 
 public:
     XTcpClient();
-    virtual ~XTcpClient(){}
+    virtual ~XTcpClient();
     virtual bool Start();
     virtual void Stop();
 

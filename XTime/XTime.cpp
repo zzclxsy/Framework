@@ -3,10 +3,12 @@
 #include <iostream>
 #include <thread>
 using namespace std;
-XTime* XTime::m_instant = nullptr;
+
+X_FACTORY_IMPL(XTime,MODULE_TIME_API,"Time related API")
+
 XTime::XTime()
 {
-
+    X_MODULE_INIT(XTime)
 }
 
 unsigned long long XTime::getMsecTimestamp()
@@ -50,10 +52,3 @@ void XTime::sleep(int sec)
     std::this_thread::sleep_for(std::chrono::seconds(sec));
 }
 
-XTime *XTime::instant()
-{
-    if (m_instant == nullptr)
-        m_instant = new XTime;
-
-    return m_instant;
-}

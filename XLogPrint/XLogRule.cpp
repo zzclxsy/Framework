@@ -1,5 +1,5 @@
 #include "XLogRule.h"
-#include "XTime/XTime.h"
+#include "XApi/VXApi.h"
 #include "boost/filesystem.hpp"
 #include <mutex>
 #include <map>
@@ -88,7 +88,7 @@ std::string XLogRule::onPacket(std::string &log)
     }
     else
     {
-        pack = "[" + XTime::instant()->toTimeString() + "] " + log;
+        pack = "[" + XGetTimeModule()->toTimeString() + "] " + log;
     }
 
     return pack;

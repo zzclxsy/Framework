@@ -2,9 +2,8 @@
 #include <chrono>
 #include <iostream>
 #include <thread>
-#include "../XTime/XTime.h"
 #include "boost/thread.hpp"
-
+#include "XApi/VXApi.h"
 class XTimerEventPrivate
 {
 public:
@@ -34,7 +33,7 @@ void XTimerEvent::doWork()
     if (d_ptr->mb_stop)
         return;
 
-    unsigned long long currTime= XTime::instant()->getMsecTimestamp();
+    unsigned long long currTime= XGetTimeModule()->getMsecTimestamp();
 
     //判断线程是否执行完成
     if (d_ptr->mb_threadFinish == false)
@@ -87,7 +86,7 @@ void XTimerEvent::stop()
 void XTimerEvent::start()
 {
     d_ptr->mb_stop = false;
-    unsigned long long tmp = XTime::instant()->getMsecTimestamp();
+    unsigned long long tmp = XGetTimeModule()->getMsecTimestamp();
     d_ptr->m_beforeTime = tmp;
 }
 
