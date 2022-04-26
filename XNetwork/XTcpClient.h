@@ -16,6 +16,8 @@ public:
     virtual int SendData(const char * data, int length);
     virtual int SendDataAsync(const char * data, int length);
 
+    void SetHeartCheck();
+
 private:
     void WorkerProc();
     void ConnectAsync();

@@ -63,7 +63,7 @@ public:
 
     virtual bool Start();
     virtual void Stop();
-    std::queue<XTcpSession *> totalTcpSession();
+    std::set<XTcpSession *> totalTcpSession();
 
 protected:
     void WorkerProc();

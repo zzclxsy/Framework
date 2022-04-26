@@ -124,9 +124,9 @@ void XTcpServer::OnDisconnect(XTcpSession *session)
     }
 }
 
-std::queue<XTcpSession *> XTcpServer::totalTcpSession()
+std::set<XTcpSession *> XTcpServer::totalTcpSession()
 {
-    return d_ptr->m_trash;
+    return d_ptr->m_sessionMap;
 }
 
 

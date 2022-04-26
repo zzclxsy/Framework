@@ -3,6 +3,7 @@
 #include <iostream>
 #include <thread>
 #include "boost/thread.hpp"
+#include "XLogPrint/XLogPrint.h"
 #include "XApi/VXApi.h"
 class XTimerEventPrivate
 {
@@ -25,6 +26,7 @@ XTimerEvent::XTimerEvent()
     d_ptr->mb_stop = true;
     d_ptr->mb_thread = false;
     d_ptr->mb_threadFinish = true;
+    d_ptr->m_beforeTime =  0;
     setEventType(XEvent::E_XTimer);
 }
 
@@ -39,7 +41,10 @@ void XTimerEvent::doWork()
     if (d_ptr->mb_threadFinish == false)
         return;
 
-    if (currTime - d_ptr->m_beforeTime >= (unsigned int)d_ptr->m_interval)
+    if (d_ptr->m_beforeTime == 0)
+        return;
+
+    if (currTime - d_ptr->m_beforeTime >= (unsigned long long)d_ptr->m_interval)
     {
         if (d_ptr->mb_thread == false)
         {
@@ -85,9 +90,9 @@ void XTimerEvent::stop()
 
 void XTimerEvent::start()
 {
-    d_ptr->mb_stop = false;
     unsigned long long tmp = XGetTimeModule()->getMsecTimestamp();
     d_ptr->m_beforeTime = tmp;
+    d_ptr->mb_stop = false;
 }
 
 void XTimerEvent::runThread()

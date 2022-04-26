@@ -43,6 +43,7 @@ SOURCES += \
     XRingBuffer.cpp
 
 
-#boost库
+#boost库头文件#
 INCLUDEPATH += $$PWD/../ThirdParty/inc
+#JsonCpp头文件
 INCLUDEPATH += $$PWD/JsonCpp/include
