@@ -19,6 +19,7 @@ include(./XNetwork/XNetwork.pri)
 include(./JsonCpp/JsonCpp.pri)
 include(./XApi/XApi.pri)
 include(./XConfig/XConfig.pri)
+include(./XTask/XTask.pri)
 
 # Default rules for deployment.
 unix {

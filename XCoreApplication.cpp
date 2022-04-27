@@ -2,6 +2,7 @@
 #include "./XEvent/XEvent.h"
 #include "XTime/XTime.h"
 #include "XObjectManager.h"
+#include "XConfig/XConfigManager.h"
 #include <assert.h>
 #include <string>
 #include <mutex>
@@ -56,6 +57,10 @@ XCoreApplication::XCoreApplication(int argc, char **argv)
         d_ptr->m_appPath = fullPath.substr(0, fullPath.find_last_of('/'));
         d_ptr->m_appName = fullPath.substr(fullPath.find_last_of('/') + 1);
     }
+
+    //注册配置管理模块
+    this->Register(new X_FACTORY_NAME(XConfigManager));
+    this->GetModule(MODULE_CONFIG_ID);
 }
 
 void XCoreApplication::exec()
@@ -150,4 +155,13 @@ std::vector<std::string> XCoreApplication::GetArguments()
 VXTime * XGetTimeModule()
 {
     return XCoreApplication::GetXService<VXTime>(MODULE_TIME_API);
+}
+
+VXModuleConfig *XGetConfigModule()
+{
+    return XCoreApplication::GetXService<VXModuleConfig>(MODULE_CONFIG_ID);
+}
+VXModuleTest *XGetPGMTest()
+{
+    return XCoreApplication::GetXService<VXModuleTest>(MODULE_TEST_PGM_ID);
 }
