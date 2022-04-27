@@ -11,12 +11,15 @@ CONFIG += c++11
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 DEFINES+=StaticLib
+
 include(./XEvent/XEvent.pri)
 include(./XTime/XTime.pri)
 include(./XLogPrint/XLogPrint.pri)
 include(./XNetwork/XNetwork.pri)
 include(./JsonCpp/JsonCpp.pri)
 include(./XApi/XApi.pri)
+include(./XConfig/XConfig.pri)
+
 # Default rules for deployment.
 unix {
     target.path = $$[QT_INSTALL_PLUGINS]/generic
@@ -35,12 +38,14 @@ CONFIG(debug, debug|release) {
 HEADERS += \
     XCoreApplication.h \
     XObjectManager.h \
-    XRingBuffer.h
+    XRingBuffer.h \
+    XUtils.h
 
 SOURCES += \
     XCoreApplication.cpp \
     XObjectManager.cpp \
-    XRingBuffer.cpp
+    XRingBuffer.cpp \
+    XUtils.cpp
 
 
 #boost库头文件#

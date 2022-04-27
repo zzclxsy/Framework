@@ -2,6 +2,7 @@
 #include <boost/bind.hpp>
 #include "../Framework/XLogPrint/XLogPrint.h"
 #include "XTcpHeartPacket.h"
+#include "XEvent/XTimerEvent.h"
 typedef boost::asio::ip::tcp TCP;
 class XTcpClientPrivate
 {
@@ -13,6 +14,8 @@ public:
     TCP::endpoint m_endPoint;
     bool mb_heartCheck;
     XTcpClient *q_ptr;
+    XTimerEvent m_connetTimer;
+
 };
 
 XTcpClient::XTcpClient()
@@ -24,6 +27,7 @@ XTcpClient::XTcpClient()
     d_ptr->m_running = false;
     d_ptr->m_sk= nullptr;
     d_ptr->mb_heartCheck = false;
+    d_ptr->m_connetTimer.setTimer(3000, [&](){this->ConnectAsync();},true);
 }
 
 XTcpClient::~XTcpClient()
@@ -158,7 +162,9 @@ void XTcpClient::OnConnect(const boost::system::error_code &error)
 {
     if (error)
     {
-        this->ConnectAsync();
+        XERROR << "XTcpClient::OnConnect connect error :"<<error;
+        d_ptr->m_connetTimer.start();
+        //this->ConnectAsync();
     }
     else
     {
