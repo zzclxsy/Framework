@@ -12,6 +12,7 @@ public:
     virtual int GetIntProperty(const std::string& name) = 0;
     virtual void TaskUpdate(const Json::Value& data) = 0;
     virtual void TaskFinished(const Json::Value& data) = 0;
+    virtual void TaskErrorAbort(const Json::Value& data) = 0;
 };
 
 #endif // VXTESTTASK_H

@@ -48,7 +48,12 @@ bool XTcpServer::Start()
 
 void XTcpServer::Stop()
 {
-
+    auto it = d_ptr->m_sessionMap.begin();
+    while (it != d_ptr->m_sessionMap.end())
+    {
+        OnDisconnect((*it));
+        it++;
+    }
 }
 
 void XTcpServer::WorkerProc()
@@ -234,7 +239,7 @@ void XTcpSession::WorkerProc()
             int dataLen = (int)d_ptr->m_socket.read_some(boost::asio::buffer(&d_ptr->m_recvBuffer[d_ptr->m_dataSize], d_ptr->TCP_RECV_BUFFER_SIZE - d_ptr->m_dataSize));
             d_ptr->m_dataSize += dataLen;
 
-            auto dataDealCallback = [this](char * data, int length)
+            auto dataDeal = [this](char * data, int length)
             {
                 this->d_ptr->m_tcpServer->OnRecv(this, data, length);
             };
@@ -245,11 +250,11 @@ void XTcpSession::WorkerProc()
                 d_ptr->m_dataSize =d_ptr->m_codec->Decode(
                             d_ptr->m_recvBuffer,
                             d_ptr->m_dataSize,
-                            dataDealCallback);
+                            dataDeal);
             }
             else
             {
-                dataDealCallback(d_ptr->m_recvBuffer, d_ptr->m_dataSize);
+                dataDeal(d_ptr->m_recvBuffer, d_ptr->m_dataSize);
                 memset(d_ptr->m_recvBuffer, 0, d_ptr->m_dataSize);
                 d_ptr->m_dataSize = 0;
             }
