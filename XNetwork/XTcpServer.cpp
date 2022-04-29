@@ -48,7 +48,12 @@ bool XTcpServer::Start()
 
 void XTcpServer::Stop()
 {
-
+    auto it = d_ptr->m_sessionMap.begin();
+    while (it != d_ptr->m_sessionMap.end())
+    {
+        OnDisconnect((*it));
+        it++;
+    }
 }
 
 void XTcpServer::WorkerProc()

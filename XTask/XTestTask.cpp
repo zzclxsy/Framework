@@ -1,6 +1,8 @@
 #include "XTestTask.h"
 #include "XTcpTaskManager.h"
 #include "XTaskKeys.h"
+#include "XNetwork/XSocketBase.h"
+#include "XUtils.h"
 XTestTask::XTestTask(const Json::Value& task, XTcpTaskManager * m)
 {
     mp_taskManager = m;
@@ -12,6 +14,22 @@ XTestTask::XTestTask(const Json::Value& task, XTcpTaskManager * m)
 void XTestTask::TaskDataUpdata(const Json::Value &task)
 {
     m_data = task;
+}
+
+void XTestTask::SetTaskClient(XSocketSession *client)
+{
+    mp_client = client;
+}
+
+void XTestTask::StartTask()
+{
+    std::string taskId = this->GetId();
+    Json::Value respData;
+    respData[TASK_KEY_ID] = taskId;
+    respData[RRPLY_TASK_TYPE] = task_start;
+
+    std::string buffer = XUtils::JsonToString(respData);
+    mp_client->SendDataAsync(buffer.c_str(), (int)buffer.size());
 }
 
 const std::string &XTestTask::GetId()
@@ -41,5 +59,13 @@ void XTestTask::TaskUpdate(const Json::Value &data)
 
 void XTestTask::TaskFinished(const Json::Value &data)
 {
+    std::string srcIp;
+    Json::Value respData;
 
+    respData[TASK_KEY_ID] = m_taskId;
+    respData[RRPLY_TASK_TYPE] = task_finished;
+    respData[RRPLY_TASK_RESULT] = data;
+
+    std::string respBuffer = XUtils::JsonToString(respData);
+    mp_client->SendDataAsync(respBuffer.c_str(), (int)respBuffer.size());
 }

@@ -4,9 +4,10 @@
 #include "XTaskKeys.h"
 #include "XApi/VXApi.h"
 #include <mutex>
+X_FACTORY_IMPL(XTcpTaskManager, MODULE_TASKMANAGER, "TASK mamager module")
 XTcpTaskManager::XTcpTaskManager()
 {
-
+    X_MODULE_INIT(XTcpTaskManager)
 }
 
 bool XTcpTaskManager::Initialize(const Json::Value & cfgData)
@@ -66,40 +67,70 @@ void XTcpTaskManager::ClearTasks()
 
 }
 
-void XTcpTaskManager::TaskFinished()
+void XTcpTaskManager::ClearCurrentTask(std::string taskid)
 {
-
-}
-
-void XTcpTaskManager::ClearCurrentTask()
-{
-
+    auto it = m_testTasks.find(taskid);
+    if (it != m_testTasks.end())
+    {
+        m_testTasks.erase(it);
+        return;
+    }
+    XERROR << "XTcpTaskManager::ClearCurrentTask, The clear object could not be found!!!";
 }
 
 int XTcpTaskManager::TaskHandler(XSocketSession *session, const char *data, int length)
 {
     Json::Value reqData = XUtils::StringToJson(data);
 
-    Json::Value respData;
-    respData[TASK_KEY_STATUS] = "ok";
-    std::string buffer = XUtils::JsonToString(respData);
+    std::string error = "";
+    std::string taskId,taskNmae;
 
-    std::string TASK_NAME_KEY = "taskName";
-    if (!reqData.isMember(TASK_NAME_KEY))
+    if (reqData.isMember(TASK_KEY_NAME) == false)
     {
-        XERROR << "JHUdpTaskManager::TaskHandler, error task detected, no task name.";
-        return session->SendData(buffer.c_str(), (int)buffer.size());
+        XERROR << "XTcpTaskManager::TaskHandler, error task detected, no task name.";
+        taskNmae = no_data;
+        error += "no task name\n";
     }
-    if (reqData[TASK_NAME_KEY].asString() == "clear")
+    if (reqData.isMember(TASK_KEY_ID) == false)
     {
-        this->ClearCurrentTask();
+        XERROR << "XTcpTaskManager::TaskHandler: no taskid, Unable to clear task";
+        taskId = no_data;
+        error += "no taskid, Unable to clear task\n";
+    }
+    if (reqData.isMember(REC_TASK_STATUS) == false)
+    {
+        XERROR << "XTcpTaskManager::TaskHandler: No task status command";
+        error += "No task status command\n";
+    }
+    if (error != "")//包格式错误
+    {
+        Json::Value respData;
+        respData[RRPLY_TASK_TYPE] =task_parse;
+        respData[TASK_KEY_ID] = taskId;
+        respData[TASK_KEY_NAME] = taskNmae;
+        //respData[]
+
+        std::string buffer = XUtils::JsonToString(respData);
+        return session->SendData(buffer.c_str(), (int)buffer.size());
+        return -1;
+    }
+
+
+    if (reqData[REC_TASK_STATUS].asString() == "clear")
+    {
+        this->ClearCurrentTask(reqData[TASK_KEY_ID].asString());
         return 0;
     }
+
+
+
     return this->DispatchTask(session, reqData);
 }
 
 int XTcpTaskManager::DispatchTask(XSocketSession *session, const Json::Value &task)
 {
+    std::lock_guard<std::mutex> lock(m_lock);
+
     VXModuleTest *PGM = XGetPGMTest();
     if (PGM == nullptr)
     {
@@ -107,6 +138,7 @@ int XTcpTaskManager::DispatchTask(XSocketSession *session, const Json::Value &ta
         return -1;
     }
     std::string key = task[TASK_KEY_ID].asString();
+    //判断是否是当前任务
     if (m_currTestTask.use_count() != 0 && m_currTestTask->GetId() == key)
     {
         m_currTestTask->TaskDataUpdata(task);
@@ -120,12 +152,16 @@ int XTcpTaskManager::DispatchTask(XSocketSession *session, const Json::Value &ta
      {
          m_currTestTask = it->second;
          m_currTestTask->TaskDataUpdata(task);
+         m_currTestTask->StartTask();
          PGM->ExecuteTask(m_currTestTask.get());
          return 0;
      }
 
-     //创建新任务
-
+    //创建新任务
     m_currTestTask = std::make_shared<XTestTask>(task, this);
-
+    m_testTasks.insert(std::pair<std::string, testTaskPtr>(key, m_currTestTask));
+    m_currTestTask->SetTaskClient(session);
+    m_currTestTask->StartTask();
+    PGM->ExecuteTask(m_currTestTask.get());
+    return 0;
 }

@@ -4,6 +4,7 @@
 #include "XApi/VXTaskManager.h"
 #include "XNetwork/XTcpServer.h"
 #include "XTask/XTestTask.h"
+#include <mutex>
 class XTcpTaskManager:
         public VXModule,
         public VXTaskManager
@@ -17,10 +18,8 @@ public:
     virtual VXTestTask *FindTask(const std::string& taskId);
     virtual void ClearTasks();
 
-    void TaskFinished();
-
 protected:
-    void ClearCurrentTask();
+    void ClearCurrentTask(std::string taskid);
     int TaskHandler(XSocketSession * session, const char * data, int length);
     int DispatchTask(XSocketSession * session, const Json::Value& task);
 
@@ -30,6 +29,8 @@ private:
     int m_port;
     testTaskPtr m_currTestTask;
     std::map<std::string, testTaskPtr> m_testTasks;//key:taskID,value:taskclass
+    std::mutex m_lock;
 };
+X_FACTORY_DECL(XTcpTaskManager)
 
 #endif // XTCPTASKMANAGER_H
