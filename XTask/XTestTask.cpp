@@ -1,6 +1,8 @@
 #include "XTestTask.h"
 #include "XTcpTaskManager.h"
 #include "XTaskKeys.h"
+#include "XNetwork/XSocketBase.h"
+#include "XUtils.h"
 XTestTask::XTestTask(const Json::Value& task, XTcpTaskManager * m)
 {
     mp_taskManager = m;
@@ -12,6 +14,22 @@ XTestTask::XTestTask(const Json::Value& task, XTcpTaskManager * m)
 void XTestTask::TaskDataUpdata(const Json::Value &task)
 {
     m_data = task;
+}
+
+void XTestTask::SetTaskClient(XSocketSession *client)
+{
+    mp_client = client;
+}
+
+void XTestTask::StartTask()
+{
+    std::string taskId = this->GetId();
+    Json::Value respData;
+    respData[TASK_KEY_ID] = taskId;
+    respData[RRPLY_TASK_TYPE] = task_start;
+    respData[RRPLY_TASK_STATUS] = "yes";
+    std::string buffer = XUtils::JsonToString(respData);
+    mp_client->SendDataAsync(buffer.c_str(), (int)buffer.size());
 }
 
 const std::string &XTestTask::GetId()
@@ -36,10 +54,39 @@ int XTestTask::GetIntProperty(const std::string &name)
 
 void XTestTask::TaskUpdate(const Json::Value &data)
 {
+    Json::Value respData;
 
+    respData[TASK_KEY_ID] = m_taskId;
+    respData[RRPLY_TASK_TYPE] = task_updata;
+    respData[RRPLY_TASK_STATUS]= "yes";
+    respData[RRPLY_TASK_RESULT] = data;
+
+    std::string respBuffer = XUtils::JsonToString(respData);
+    mp_client->SendDataAsync(respBuffer.c_str(), (int)respBuffer.size());
 }
 
 void XTestTask::TaskFinished(const Json::Value &data)
 {
+    Json::Value respData;
 
+    respData[TASK_KEY_ID] = m_taskId;
+    respData[RRPLY_TASK_TYPE] = task_finished;
+    respData[RRPLY_TASK_STATUS]= "yes";
+    respData[RRPLY_TASK_RESULT] = data;
+
+    std::string respBuffer = XUtils::JsonToString(respData);
+    mp_client->SendDataAsync(respBuffer.c_str(), (int)respBuffer.size());
+}
+
+void XTestTask::TaskErrorAbort(const Json::Value &data)
+{
+    Json::Value respData;
+
+    respData[TASK_KEY_ID] = m_taskId;
+    respData[RRPLY_TASK_TYPE] = task_burst_error;
+    respData[RRPLY_TASK_STATUS]= "yes";
+    respData[RRPLY_TASK_ERROR] = data;
+
+    std::string respBuffer = XUtils::JsonToString(respData);
+    mp_client->SendDataAsync(respBuffer.c_str(), (int)respBuffer.size());
 }
