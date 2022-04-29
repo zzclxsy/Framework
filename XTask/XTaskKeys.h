@@ -22,11 +22,10 @@ const std::string RRPLY_TASK_STATUS = "succeed";//yes or no
 const std::string RRPLY_TASK_RESULT = "taskResult";//结果
 const std::string RRPLY_TASK_ERROR = "error"; //错误原因
 
-const std::string no_data = "null"; //错误原因
+const std::string no_data = "null";
 
 /*                  回复JSON数据包格式
  *          Data[TASK_KEY_ID]       任务id
- *          Data[TASK_KEY_NAME]     任务名字
  *          Data[RRPLY_TASK_TYPE]   任务回复类型
  *          Data[RRPLY_TASK_STATUS]       任务状态是成功还是失败
  *          Data[RRPLY_TASK_RESULT]       任务结果

@@ -19,6 +19,7 @@ public:
     virtual int GetIntProperty(const std::string& name);
     virtual void TaskUpdate(const Json::Value& data);
     virtual void TaskFinished(const Json::Value& data);
+    virtual void TaskErrorAbort(const Json::Value& data);
 
 private:
     XTcpTaskManager *mp_taskManager;

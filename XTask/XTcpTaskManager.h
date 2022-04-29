@@ -19,7 +19,7 @@ public:
     virtual void ClearTasks();
 
 protected:
-    void ClearCurrentTask(std::string taskid);
+    bool ClearCurrentTask(std::string taskid);
     int TaskHandler(XSocketSession * session, const char * data, int length);
     int DispatchTask(XSocketSession * session, const Json::Value& task);
 

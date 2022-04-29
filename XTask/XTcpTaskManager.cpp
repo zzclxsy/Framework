@@ -42,10 +42,10 @@ bool XTcpTaskManager::Initialize(const Json::Value & cfgData)
     m_tcpServer->SetIpAddress(m_bindIp);
     m_tcpServer->SetPort(m_port);
     m_tcpServer->SetDataHandler(std::bind(&XTcpTaskManager::TaskHandler,
-                                this,
-                                std::placeholders::_1,
-                                std::placeholders::_2,
-                                std::placeholders::_3));
+                                          this,
+                                          std::placeholders::_1,
+                                          std::placeholders::_2,
+                                          std::placeholders::_3));
 
     m_tcpServer->Start();
 
@@ -59,31 +59,41 @@ void XTcpTaskManager::Release()
 
 VXTestTask *XTcpTaskManager::FindTask(const std::string &taskId)
 {
+    auto it = m_testTasks.find(taskId);
+    if (it != m_testTasks.end())
+    {
+        return it->second.get();
+    }
+
     return nullptr;
 }
 
 void XTcpTaskManager::ClearTasks()
 {
-
+    m_testTasks.clear();
 }
 
-void XTcpTaskManager::ClearCurrentTask(std::string taskid)
+bool XTcpTaskManager::ClearCurrentTask(std::string taskid)
 {
     auto it = m_testTasks.find(taskid);
     if (it != m_testTasks.end())
     {
         m_testTasks.erase(it);
-        return;
+        return true;
     }
     XERROR << "XTcpTaskManager::ClearCurrentTask, The clear object could not be found!!!";
+    return false;
 }
 
 int XTcpTaskManager::TaskHandler(XSocketSession *session, const char *data, int length)
 {
-    Json::Value reqData = XUtils::StringToJson(data);
+    static char buf[100];
+    memcpy(buf, 0, 100);
+    memcpy(buf, data, length);
+    Json::Value reqData = XUtils::StringToJson(buf);
 
     std::string error = "";
-    std::string taskId,taskNmae;
+    std::string taskId, taskNmae;
 
     if (reqData.isMember(TASK_KEY_NAME) == false)
     {
@@ -102,27 +112,31 @@ int XTcpTaskManager::TaskHandler(XSocketSession *session, const char *data, int 
         XERROR << "XTcpTaskManager::TaskHandler: No task status command";
         error += "No task status command\n";
     }
-    if (error != "")//包格式错误
-    {
+
+    auto errorSend = [&](std::string err){
         Json::Value respData;
         respData[RRPLY_TASK_TYPE] =task_parse;
         respData[TASK_KEY_ID] = taskId;
         respData[TASK_KEY_NAME] = taskNmae;
-        //respData[]
+        respData[RRPLY_TASK_STATUS] = "no";
+        respData[RRPLY_TASK_ERROR] = err;
 
         std::string buffer = XUtils::JsonToString(respData);
         return session->SendData(buffer.c_str(), (int)buffer.size());
-        return -1;
-    }
+    };
 
+    if (error != "")//包格式错误
+    {
+        return errorSend(error);
+    }
 
     if (reqData[REC_TASK_STATUS].asString() == "clear")
     {
-        this->ClearCurrentTask(reqData[TASK_KEY_ID].asString());
+        if (this->ClearCurrentTask(reqData[TASK_KEY_ID].asString()) == false)
+           return errorSend("The clear object could not be found!!!");
+
         return 0;
     }
-
-
 
     return this->DispatchTask(session, reqData);
 }
@@ -147,15 +161,15 @@ int XTcpTaskManager::DispatchTask(XSocketSession *session, const Json::Value &ta
     }
 
     //判断是否是以前的任务
-     auto it = m_testTasks.find(key);
-     if (it != m_testTasks.end())
-     {
-         m_currTestTask = it->second;
-         m_currTestTask->TaskDataUpdata(task);
-         m_currTestTask->StartTask();
-         PGM->ExecuteTask(m_currTestTask.get());
-         return 0;
-     }
+    auto it = m_testTasks.find(key);
+    if (it != m_testTasks.end())
+    {
+        m_currTestTask = it->second;
+        m_currTestTask->TaskDataUpdata(task);
+        m_currTestTask->StartTask();
+        PGM->ExecuteTask(m_currTestTask.get());
+        return 0;
+    }
 
     //创建新任务
     m_currTestTask = std::make_shared<XTestTask>(task, this);
