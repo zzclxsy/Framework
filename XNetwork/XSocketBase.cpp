@@ -9,6 +9,12 @@ XSocketClient::XSocketClient()
     m_dataBuffer.SetBufferSize(RECV_BUFFER_SIZE * 10);
 }
 
+XSocketClient::~XSocketClient()
+{
+    delete m_recvBuffer;
+    delete m_codec;
+}
+
 void XSocketClient::SetServerIp(const std::string &ip)
 {
     m_serverIp = ip;
@@ -24,7 +30,7 @@ void XSocketClient::SetDataHandler(DataHandler handler)
     m_handler = handler;
 }
 
-void XSocketClient::SetPacketDecoder(XPacketCodec *decoder)
+void XSocketClient::SetPacketDecoder(VXPacketCodec *decoder)
 {
     m_codec = decoder;
 }
@@ -64,7 +70,7 @@ void XSocketServer::SetDataHandler(DataHandler handler)
     m_handler = handler;
 }
 
-void XSocketServer::SetPacketCodec(XPacketCodec *decoder)
+void XSocketServer::SetPacketCodec(VXPacketCodec *decoder)
 {
      m_codec = decoder;
 }

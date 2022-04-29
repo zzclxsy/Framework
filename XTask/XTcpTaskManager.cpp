@@ -87,7 +87,7 @@ int XTcpTaskManager::TaskHandler(XSocketSession *session, const char *data, int 
     std::string TASK_NAME_KEY = "taskName";
     if (!reqData.isMember(TASK_NAME_KEY))
     {
-        XERROR << "JHUdpTaskManager::TaskHandler, error task detected, no task name.";
+        XERROR << "XTcpTaskManager::TaskHandler, error task detected, no task name.";
         return session->SendData(buffer.c_str(), (int)buffer.size());
     }
     if (reqData[TASK_NAME_KEY].asString() == "clear")

@@ -3,6 +3,7 @@
 #include "XTime/XTime.h"
 #include "XObjectManager.h"
 #include "XConfig/XConfigManager.h"
+#include "XNetwork/XTcpClient.h"
 #include <assert.h>
 #include <string>
 #include <mutex>
@@ -91,6 +92,11 @@ void XCoreApplication::initTimeModule()
     VXModule * module1 = d_ptr->mp_objectManager->GetModule(MODULE_TIME_API);
     assert(module1 != nullptr);
     module1->Initialize("");
+}
+
+std::shared_ptr<VXTcpClient> XCoreApplication::CreateTcpClient()
+{
+    return std::make_shared<XTcpClient>();
 }
 
 void XCoreApplication::addEvent(XEvent *event)

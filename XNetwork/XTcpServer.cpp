@@ -139,7 +139,7 @@ public:
 
     TCP::socket m_socket;
     XTcpServer * m_tcpServer;
-    XPacketCodec * m_codec;
+    VXPacketCodec * m_codec;
 
     std::thread * m_worker;
     bool m_running;

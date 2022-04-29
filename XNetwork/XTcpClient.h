@@ -2,7 +2,7 @@
 #define XTCPCLIENT_H
 
 #include "XSocketBase.h"
-
+#include "XApi/VXModule.h"
 class XTcpClientPrivate;
 class XTcpClient:public XSocketClient
 {

@@ -1,6 +1,9 @@
 #ifndef XCOREAPPLICATION_H
 #define XCOREAPPLICATION_H
 #include <vector>
+#include <string>
+#include <memory>
+class VXTcpClient;
 class VXFactory;
 class VXModule;
 class XEvent;
@@ -14,6 +17,7 @@ public:
     void quit();
 
     void initTimeModule();
+    std::shared_ptr<VXTcpClient> CreateTcpClient();
 
     static XCoreApplication *GetApp();
 

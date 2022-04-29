@@ -32,7 +32,21 @@ XTcpClient::XTcpClient()
 
 XTcpClient::~XTcpClient()
 {
-    Stop();
+    d_ptr->m_running = false;
+    if (d_ptr->m_worker)
+    {
+        d_ptr->m_worker->join();
+        delete d_ptr->m_worker;
+        d_ptr->m_worker = nullptr;
+    }
+
+    if (d_ptr->m_sk)
+    {
+        d_ptr->m_sk->close();
+        delete d_ptr->m_sk;
+        d_ptr->m_sk = nullptr;
+    }
+
     delete d_ptr;
 }
 
@@ -164,7 +178,6 @@ void XTcpClient::OnConnect(const boost::system::error_code &error)
     {
         XERROR << "XTcpClient::OnConnect connect error :"<<error;
         d_ptr->m_connetTimer.start();
-        //this->ConnectAsync();
     }
     else
     {
