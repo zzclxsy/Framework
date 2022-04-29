@@ -1,7 +1,7 @@
 #include "XTcpServer.h"
 #include "../Framework/XLogPrint/XLogPrint.h"
 #include <boost/bind.hpp>
-
+#include "XTcpHeartPacket.h"
 class XTcpServerPrivate
 {
 public:
@@ -12,6 +12,7 @@ public:
     std::set<XTcpSession *> m_sessionMap;
     std::queue<XTcpSession *> m_trash;
     std::mutex m_lock;
+    bool mb_heartCheck;
 };
 
 XTcpServer::XTcpServer()
@@ -134,9 +135,14 @@ std::set<XTcpSession *> XTcpServer::totalTcpSession()
     return d_ptr->m_sessionMap;
 }
 
+void XTcpServer::SetHeartCheck()
+{
+    d_ptr->mb_heartCheck = true;
+}
 
 
 
+//*************************************************************************************************************************************
 class XTcpSessionPrivate
 {
 public:
@@ -153,12 +159,14 @@ public:
 
     char m_recvBuffer[TCP_RECV_BUFFER_SIZE];
     int m_dataSize;
+     XTcpHeartPacket m_heartPacket;
 };
 
 XTcpSession::XTcpSession(XTcpServer *tcpServer)
 {
     d_ptr = new XTcpSessionPrivate(tcpServer);
-
+    d_ptr->m_heartPacket.SetParameter(&d_ptr->m_socket, std::bind(&XTcpSession::SendDataAsync,this,
+                                                                  std::placeholders::_1,std::placeholders::_2));
     d_ptr->m_tcpServer = tcpServer;
     memset(d_ptr->m_recvBuffer, 0, d_ptr->TCP_RECV_BUFFER_SIZE);
     d_ptr->m_dataSize = 0;
@@ -241,7 +249,8 @@ void XTcpSession::WorkerProc()
 
             auto dataDeal = [this](char * data, int length)
             {
-                this->d_ptr->m_tcpServer->OnRecv(this, data, length);
+                if (d_ptr->m_tcpServer->d_ptr->mb_heartCheck ==false || d_ptr->m_heartPacket.OnRecv(data, length) == false)
+                    this->d_ptr->m_tcpServer->OnRecv(this, data, length);
             };
 
             //是否有解码

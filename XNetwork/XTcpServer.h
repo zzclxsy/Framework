@@ -6,6 +6,7 @@
 
 typedef boost::asio::ip::tcp TCP;
 class XTcpSessionPrivate;
+class XTcpServer;
 class XTcpSession
         : public XSocketSession
 {
@@ -64,6 +65,7 @@ public:
     virtual bool Start();
     virtual void Stop();
     std::set<XTcpSession *> totalTcpSession();
+    void SetHeartCheck();
 
 protected:
     void WorkerProc();

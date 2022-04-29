@@ -223,7 +223,7 @@ void XTcpClient::OnRecv(const boost::system::error_code &error, size_t bytesTran
 
         auto dataDealCallback = [this](char * data, int length)
         {
-            if (d_ptr->mb_heartCheck || d_ptr->m_heartPacket.OnRecv(data, length) == false)
+            if (d_ptr->mb_heartCheck == false || d_ptr->m_heartPacket.OnRecv(data, length) == false)
             {
                 this->m_dataBuffer.Write(data, length);
                 std::unique_lock <std::mutex> lock(this->m_cvLock);
@@ -263,7 +263,9 @@ void XTcpClient::OnRecvCustom(const boost::system::error_code &error, size_t byt
         {
 
             if (d_ptr->mb_heartCheck == false || d_ptr->m_heartPacket.OnRecv(data, length) == false)
+            {
                 this->m_handler(data, length);
+            }
         };
 
         if (m_codec)

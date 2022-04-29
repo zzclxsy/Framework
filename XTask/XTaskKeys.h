@@ -5,14 +5,14 @@
 const std::string TASK_KEY_ID = "testId";
 const std::string TASK_KEY_NAME = "testName";
 
-const std::string REC_TASK_STATUS = "taskState";//finish, clrear,start
+const std::string REC_TASK_STATUS = "taskState";//finish, clear,start
 
 //*****************回复类型标识**********************
 //key
 const std::string RRPLY_TASK_TYPE = "type";
 //value
 const std::string task_parse = "taskParse";//任务解析
-const std::string task_start = "taskStart";//任务解析
+const std::string task_start = "taskStart";//任务开始
 const std::string task_updata = "taskUdpata";//任务执行中
 const std::string task_finished = "taskFinished";//任务结束
 const std::string task_burst_error = "taskBurstError";//任务突发错误
