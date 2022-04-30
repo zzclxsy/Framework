@@ -12,7 +12,7 @@ class XTcpHeartPacket
 public:
     XTcpHeartPacket();
     void SetParameter(TCP::socket *, sendCallback callback);
-    bool OnRecv(const char * data, int length);
+    bool OnRecv(char * data, int length);
     void Start();
     void Stop();
 

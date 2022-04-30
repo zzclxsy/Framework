@@ -17,7 +17,6 @@ public:
     void exec();
     void quit();
 
-    void initTimeModule();
     std::shared_ptr<VXTcpClient> CreateTcpClient();
     std::shared_ptr<VXTcpServer> CreateTcpServer();
 

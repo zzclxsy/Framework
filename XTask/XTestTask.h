@@ -13,6 +13,7 @@ public:
     void SetTaskClient(VXSocketSession *client);
     void StartTask();
 
+    virtual const std::string &GetTaskName();
     virtual const std::string &GetId();
     virtual const Json::Value &GetData();
     virtual std::string GetStringProperty(const std::string& name);
@@ -25,6 +26,7 @@ private:
     XTcpTaskManager *mp_taskManager;
     std::string m_taskId;
     Json::Value m_data;
+    std::string m_taskName;
     VXSocketSession *mp_client;
 };
 

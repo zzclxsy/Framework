@@ -26,7 +26,7 @@ XTcpHeartPacket::XTcpHeartPacket()
 			mb_recvHeart = false;
 			m_timeroutTimer->start();
 		});
-	m_sendHeartTimer->usingThread(true);
+    m_sendHeartTimer->usingThread(true);
 }
 
 void XTcpHeartPacket::SetParameter(boost::asio::ip::tcp::socket * sock, sendCallback callback)
@@ -35,7 +35,7 @@ void XTcpHeartPacket::SetParameter(boost::asio::ip::tcp::socket * sock, sendCall
     m_callback = callback;
 }
 
-bool XTcpHeartPacket::OnRecv(const char *data, int length)
+bool XTcpHeartPacket::OnRecv(char *data, int length)
 {
     if (mb_start == false)
         return false;
@@ -49,12 +49,7 @@ bool XTcpHeartPacket::OnRecv(const char *data, int length)
         return false;
     }
 
-    char buf[5];
-    memcpy(buf, data, length);
-
-    std::string str(buf);
-
-    if (str == "heart")
+    if (memcmp(data, "heart", 5) == 0)
     {
         mb_recvHeart = true;
         return true;

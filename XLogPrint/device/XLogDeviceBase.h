@@ -12,7 +12,7 @@ public:
     }
     virtual ~XLogDeviceBase(){};
     void setRule(XLogRule *rule){mp_rule = rule;}
-    virtual bool initialize(const Json::Value &cfgData){return true;}
+    virtual bool initialize(const Json::Value &){return true;}
     //基类做最基本的数据处理
     virtual bool PrintLog(std::string& log, logLevel level)
     {

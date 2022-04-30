@@ -4,7 +4,7 @@
 #include "XTaskKeys.h"
 #include "XApi/VXApi.h"
 #include <mutex>
-X_FACTORY_IMPL(XTcpTaskManager, MODULE_TASKMANAGER, "TASK mamager module")
+X_FACTORY_IMPL(XTcpTaskManager, MODULE_TASKMANAGER, "XTcpTaskManager")
 XTcpTaskManager::XTcpTaskManager()
 {
     X_MODULE_INIT(XTcpTaskManager)
@@ -12,29 +12,29 @@ XTcpTaskManager::XTcpTaskManager()
 
 bool XTcpTaskManager::Initialize(const Json::Value & cfgData)
 {
-    XINFO << "JHUdpTaskManager::Initialize";
+    XINFO << "XTcpTaskManager::Initialize";
 
     if (m_tcpServer.use_count() != 0)
     {
         return true;
     }
 
-    if (cfgData.isMember("ip"))
+    if (cfgData.isMember("ListenIP"))
     {
-        m_bindIp = cfgData["ip"].asString();
+        m_bindIp = cfgData["ListenIP"].asString();
     }
     else
     {
-        XERROR << "JHUdpTaskManager::Initialize, missing cfg data:" << "ip";
+        XERROR << "XTcpTaskManager::Initialize, missing cfg data:" << "ip";
         return false;
     }
-    if (cfgData.isMember("port"))
+    if (cfgData.isMember("BindPort"))
     {
-        m_port = cfgData["port"].asInt();
+        m_port = cfgData["BindPort"].asInt();
     }
     else
     {
-        XERROR << "JHUdpTaskManager::Initialize, missing cfg data:" << "port";
+        XERROR << "XTcpTaskManager::Initialize, missing cfg data:" << "port";
         return false;
     }
 
@@ -88,7 +88,7 @@ bool XTcpTaskManager::ClearCurrentTask(std::string taskid)
 int XTcpTaskManager::TaskHandler(VXSocketSession *session, const char *data, int length)
 {
     static char buf[100];
-    memcpy(buf, 0, 100);
+    memset(buf, 0, 100);
     memcpy(buf, data, length);
     Json::Value reqData = XUtils::StringToJson(buf);
 
@@ -118,7 +118,6 @@ int XTcpTaskManager::TaskHandler(VXSocketSession *session, const char *data, int
         respData[RRPLY_TASK_TYPE] =task_parse;
         respData[TASK_KEY_ID] = taskId;
         respData[TASK_KEY_NAME] = taskNmae;
-        respData[RRPLY_TASK_STATUS] = "no";
         respData[RRPLY_TASK_ERROR] = err;
 
         std::string buffer = XUtils::JsonToString(respData);
@@ -155,6 +154,7 @@ int XTcpTaskManager::DispatchTask(VXSocketSession *session, const Json::Value &t
     //判断是否是当前任务
     if (m_currTestTask.use_count() != 0 && m_currTestTask->GetId() == key)
     {
+        m_currTestTask->SetTaskClient(session);
         m_currTestTask->TaskDataUpdata(task);
         PGM->ExecuteTask(m_currTestTask.get());
         return 0;
@@ -165,6 +165,7 @@ int XTcpTaskManager::DispatchTask(VXSocketSession *session, const Json::Value &t
     if (it != m_testTasks.end())
     {
         m_currTestTask = it->second;
+        m_currTestTask->SetTaskClient(session);
         m_currTestTask->TaskDataUpdata(task);
         m_currTestTask->StartTask();
         PGM->ExecuteTask(m_currTestTask.get());

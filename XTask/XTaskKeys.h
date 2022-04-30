@@ -18,7 +18,6 @@ const std::string task_finished = "taskFinished";//任务结束
 const std::string task_burst_error = "taskBurstError";//任务突发错误
 
 //key
-const std::string RRPLY_TASK_STATUS = "succeed";//yes or no
 const std::string RRPLY_TASK_RESULT = "taskResult";//结果
 const std::string RRPLY_TASK_ERROR = "error"; //错误原因
 

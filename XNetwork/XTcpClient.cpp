@@ -182,7 +182,17 @@ void XTcpClient::OnConnect(const boost::system::error_code &error)
     else
     {
         XDEBUG << "XTcpClient::OnConnect\t" <<m_serverIp <<m_serverPort;
-        m_handler ? this->RecvDataAsyncCustom() : this->RecvDataAsync();
+
+        if (m_handler)
+        {
+            m_handler("connect",7);
+            this->RecvDataAsyncCustom();
+        }
+        else
+        {
+            this->RecvDataAsync();
+        }
+
         //开始心跳检测
         if (d_ptr->mb_heartCheck)
             d_ptr->m_heartPacket.Start();
@@ -261,7 +271,6 @@ void XTcpClient::OnRecvCustom(const boost::system::error_code &error, size_t byt
 
         auto dataDealCallback = [this](char * data, int length)
         {
-
             if (d_ptr->mb_heartCheck == false || d_ptr->m_heartPacket.OnRecv(data, length) == false)
             {
                 this->m_handler(data, length);

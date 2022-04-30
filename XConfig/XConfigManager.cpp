@@ -6,7 +6,7 @@
 #include "XLogPrint/XLogPrint.h"
 #include "XUtils.h"
 #include "XApi/VXModuleTypeDef.h"
-X_FACTORY_IMPL(XConfigManager, MODULE_CONFIG_ID, "app config file")
+X_FACTORY_IMPL(XConfigManager, MODULE_CONFIG_ID, "XConfigManager")
 XConfigManager::XConfigManager()
 {
     X_MODULE_INIT(XConfigManager)

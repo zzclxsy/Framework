@@ -63,7 +63,7 @@ void XTcpServer::WorkerProc()
     boost::asio::ip::address ipAddress = boost::asio::ip::address::from_string(m_bindIp);
     d_ptr->m_acceptor = new TCP::acceptor(m_ioctx, TCP::endpoint(ipAddress, m_bindPort));
     this->Accept();
-    XINFO <<"TcpServer starting success";
+    XINFO <<"The TcpServer is started successfully!";
     while (d_ptr->m_running)
     {
         m_ioctx.run_for(std::chrono::milliseconds(100));
