@@ -3,6 +3,7 @@
 #include <boost/asio.hpp>
 #include <functional>
 #include "XEvent/XTimerEvent.h"
+#include <memory>
 class XTcpHeartPacket
 {
     typedef boost::asio::ip::tcp TCP;
@@ -23,8 +24,8 @@ private:
     sendCallback m_callback;
     bool mb_start;
     bool mb_recvHeart;
-    XTimerEvent m_sendHeartTimer;
-    XTimerEvent m_timeroutTimer;
+    std::shared_ptr<XTimerEvent> m_sendHeartTimer;
+    std::shared_ptr<XTimerEvent> m_timeroutTimer;
 };
 
 #endif // XTCPHEARTPACKET_H

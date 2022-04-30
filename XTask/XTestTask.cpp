@@ -16,7 +16,7 @@ void XTestTask::TaskDataUpdata(const Json::Value &task)
     m_data = task;
 }
 
-void XTestTask::SetTaskClient(XSocketSession *client)
+void XTestTask::SetTaskClient(VXSocketSession *client)
 {
     mp_client = client;
 }

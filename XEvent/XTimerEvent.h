@@ -5,12 +5,8 @@
 #include <functional>
 #include <thread>
 
-class XTimerEventPrivate;
 class XTimerEvent : public XEvent
 {
-    typedef struct {
-
-    }S_TimerAttr;
 public:
     XTimerEvent();
     virtual void doWork();
@@ -25,7 +21,13 @@ private:
     void runThread();
 
 private:
-    XTimerEventPrivate *d_ptr;
+    int m_interval;
+    bool mb_Single;
+    std::function<void()> m_callback;
+    bool mb_stop;
+    unsigned long long m_beforeTime;
+    bool mb_thread;
+    bool mb_threadFinish;
 };
 
 #endif // XTIMEREVENT_H

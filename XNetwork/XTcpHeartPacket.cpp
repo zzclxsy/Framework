@@ -6,24 +6,27 @@ XTcpHeartPacket::XTcpHeartPacket()
     mp_socket = nullptr;
     mb_recvHeart = false;
 
-    m_timeroutTimer.setTimer(1000, [&](){
+	m_sendHeartTimer = std::make_shared<XTimerEvent>();
+	m_timeroutTimer = std::make_shared<XTimerEvent>();
 
-        if (mb_recvHeart)
-            return;
+	m_timeroutTimer->setTimer(1000, [&]()
+		{
+			if (mb_recvHeart)
+				return;
 
-        XDEBUG <<"no recv heart packet";
-        mb_start = false;
-        m_sendHeartTimer.stop();
-        mp_socket->close();
-    },true);
+			XDEBUG << "no recv heart packet";
+			mb_start = false;
+			m_sendHeartTimer->stop();
+			mp_socket->close();
+		}, true);
 
-    m_sendHeartTimer.setTimer(3000,[&](){
-        m_callback("heart",5);
-        mb_recvHeart = false;
-        m_timeroutTimer.start();
-    });
-    m_sendHeartTimer.usingThread(true);
-
+	m_sendHeartTimer->setTimer(3000, [&]()
+		{
+			m_callback("heart", 5);
+			mb_recvHeart = false;
+			m_timeroutTimer->start();
+		});
+	m_sendHeartTimer->usingThread(true);
 }
 
 void XTcpHeartPacket::SetParameter(boost::asio::ip::tcp::socket * sock, sendCallback callback)
@@ -68,11 +71,11 @@ void XTcpHeartPacket::Start()
 void XTcpHeartPacket::Stop()
 {
     mb_start = false;
-    m_sendHeartTimer.stop();
+    m_sendHeartTimer->stop();
 }
 
 void XTcpHeartPacket::WorkerProc()
 {
     XDEBUG <<"start heart.";
-    m_sendHeartTimer.start();
+    m_sendHeartTimer->start();
 }

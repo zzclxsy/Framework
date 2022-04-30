@@ -85,7 +85,7 @@ bool XTcpTaskManager::ClearCurrentTask(std::string taskid)
     return false;
 }
 
-int XTcpTaskManager::TaskHandler(XSocketSession *session, const char *data, int length)
+int XTcpTaskManager::TaskHandler(VXSocketSession *session, const char *data, int length)
 {
     static char buf[100];
     memcpy(buf, 0, 100);
@@ -141,7 +141,7 @@ int XTcpTaskManager::TaskHandler(XSocketSession *session, const char *data, int 
     return this->DispatchTask(session, reqData);
 }
 
-int XTcpTaskManager::DispatchTask(XSocketSession *session, const Json::Value &task)
+int XTcpTaskManager::DispatchTask(VXSocketSession *session, const Json::Value &task)
 {
     std::lock_guard<std::mutex> lock(m_lock);
 

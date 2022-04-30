@@ -16,7 +16,7 @@ public:
     virtual void SetServerPort(int port) = 0;
     virtual void SetDataHandler(DataHandler handler) = 0;
     virtual void SetPacketDecoder(VXPacketCodec * decoder) = 0;
-
+    virtual void SetHeartCheck() = 0;
     virtual bool Start() = 0;
     virtual void Stop() = 0;
 

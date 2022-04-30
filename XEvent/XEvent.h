@@ -1,6 +1,6 @@
 #ifndef XEVENT_H
 #define XEVENT_H
-class XEventPrivate;
+
 class XEvent
 {
 public:
@@ -21,7 +21,7 @@ protected:
     void setEventType(E_EventType type);
 
 private:
-    XEventPrivate *d_ptr;
+    XEvent::E_EventType m_type;
 };
 
 #endif // XEVENT_H

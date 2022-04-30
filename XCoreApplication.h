@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+class VXTcpServer;
 class VXTcpClient;
 class VXFactory;
 class VXModule;
@@ -18,6 +19,7 @@ public:
 
     void initTimeModule();
     std::shared_ptr<VXTcpClient> CreateTcpClient();
+    std::shared_ptr<VXTcpServer> CreateTcpServer();
 
     static XCoreApplication *GetApp();
 

@@ -3,6 +3,8 @@
 #include "VXTime.h"
 #include "VXModuleConfig.h"
 #include "VXModuleTest.h"
+#include "VXTcpServer.h"
+
 VXTime * XGetTimeModule();
 VXModuleConfig *XGetConfigModule();
 VXModuleTest *XGetPGMTest();

@@ -7,24 +7,9 @@
 #include "XRingBuffer.h"
 #include "XApi/VXPacketCodec.h"
 #include "XApi/VXTcpClient.h"
+#include "XApi/VXSocketSession.h"
+#include "XApi/VXTcpServer.h"
 typedef boost::asio::io_context IOContext;
-
-
-class XSocketSession
-{
-public:
-    XSocketSession(){};
-    virtual ~XSocketSession(){};
-
-    virtual std::string RemoteIpAddress() = 0;
-    virtual int RemotePort() = 0;
-
-    virtual int RecvData(char * buffer, int length) = 0;
-    virtual int SendData(const char * data, int length) = 0;
-    virtual int RecvDataAsync() = 0;
-    virtual int SendDataAsync(const char * data, int length) = 0;
-};
-
 
 class XSocketClient:public VXTcpClient
 {
@@ -59,21 +44,18 @@ protected:
     XRingBuffer m_dataBuffer;
 };
 
-class XSocketServer
+class XSocketServer:public VXTcpServer
 {
 public:
     XSocketServer();
     virtual ~XSocketServer(){};
 
-    typedef std::function<int (XSocketSession *, const char *, int)> DataHandler;
+    typedef std::function<int (VXSocketSession *, const char *, int)> DataHandler;
 
-    void SetIpAddress(const std::string& ip);
-    void SetPort(int port);
-    void SetDataHandler(DataHandler handler);
-    void SetPacketCodec(VXPacketCodec * decoder);
-
-    virtual bool Start() = 0;
-    virtual void Stop() = 0;
+    virtual void SetIpAddress(const std::string& ip);
+    virtual void SetPort(int port);
+    virtual void SetDataHandler(DataHandler handler);
+    virtual void SetPacketCodec(VXPacketCodec * decoder);
 
 protected:
     IOContext m_ioctx;

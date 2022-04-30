@@ -1,13 +1,16 @@
 #include "XCoreApplication.h"
 #include "./XEvent/XEvent.h"
+#include "XLogPrint/XLogPrint.h"
 #include "XTime/XTime.h"
 #include "XObjectManager.h"
 #include "XConfig/XConfigManager.h"
 #include "XNetwork/XTcpClient.h"
+#include "XNetwork/XTcpServer.h"
 #include <assert.h>
 #include <string>
 #include <mutex>
 #include "XApi/VXApi.h"
+#include <thread>
 class XCoreApplicationPrivate
 {
 public:
@@ -69,14 +72,20 @@ void XCoreApplication::exec()
     static int index = 0;
     while(!d_ptr->m_isQuit)
     {
+
         if ((unsigned int)index == d_ptr->m_allEvent.size())
             index = 0;
 
         if (d_ptr->m_allEvent.size() == 0)
             continue;
 
+        //防止事件被移除，导致索引溢出
+        if (d_ptr->m_mutex.try_lock() == false)
+            continue;
+        
         XEvent *event = d_ptr->m_allEvent.at(index);
         event->doWork();
+        d_ptr->m_mutex.unlock();
         index++;
     }
 }
@@ -99,8 +108,14 @@ std::shared_ptr<VXTcpClient> XCoreApplication::CreateTcpClient()
     return std::make_shared<XTcpClient>();
 }
 
+std::shared_ptr<VXTcpServer> XCoreApplication::CreateTcpServer()
+{
+    return std::make_shared<XTcpServer>();
+}
+
 void XCoreApplication::addEvent(XEvent *event)
 {
+    XDEBUG << "addEvent:" << event;
     d_ptr->m_mutex.lock();
     d_ptr->m_allEvent.push_back(event);
     d_ptr->m_mutex.unlock();
@@ -115,7 +130,7 @@ void XCoreApplication::removeEvent(XEvent *event)
         if ((*it) == event)
         {
             d_ptr->m_allEvent.erase(it);
-            return;
+            break;
         }
         it++;
     }

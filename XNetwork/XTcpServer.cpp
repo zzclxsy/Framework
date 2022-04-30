@@ -20,6 +20,7 @@ XTcpServer::XTcpServer()
     d_ptr = new XTcpServerPrivate;
     d_ptr->m_worker = nullptr;
     d_ptr->m_running = false;
+    d_ptr->mb_heartCheck = false;
 }
 
 bool XTcpServer::Start()
