@@ -43,8 +43,8 @@ int XTcpPacketDecoder::Encode(char *data, int length, Callback callback)
     int len = 4 + length&0xff;
     char temp[1024];
 
-    memcmp(temp,&d, 4);
-    memcmp(&temp[4], data, length);
+    memcpy(temp,&d, 4);
+    memcpy(&temp[4], data, length);
 
     callback(temp, len);
 
