@@ -6,7 +6,7 @@
 
 typedef boost::asio::ip::tcp TCP;
 class XTcpSession
-        : public XSocketSession
+        : public VXSocketSession
 {
     friend class XTcpServer;
 
@@ -35,8 +35,8 @@ protected:
 
     void WorkerProc();
 
-    virtual int RecvData(char * buffer, int length);
-    virtual int RecvDataAsync();
+    int RecvData(char * buffer, int length);
+    int RecvDataAsync();
 
 
 protected:
@@ -72,6 +72,7 @@ public:
     virtual bool Start();
     virtual void Stop();
     std::set<XTcpSession *> totalTcpSession();
+    void SetHeartCheck();
 
 protected:
     void WorkerProc();

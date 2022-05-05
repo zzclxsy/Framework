@@ -2,18 +2,11 @@
 #include "XCoreApplication.h"
 #include <iostream>
 
-class XEventLoopPrivate
-{
-public:
-    bool m_isQuit;
-    XEventLoop *q_ptr;
-};
+
 
 XEventLoop::XEventLoop()
 {
-    d_ptr = new XEventLoopPrivate;
-    d_ptr->q_ptr = this;
-    d_ptr->m_isQuit = false;
+    m_isQuit = false;
     setEventType(XEvent::E_XEventLoop);
 }
 
@@ -24,7 +17,7 @@ void XEventLoop::exec()
 
     int index = 0;
 
-    while(!d_ptr->m_isQuit)
+    while(!m_isQuit)
     {
 
         if ((unsigned int)index == m_allEvent.size())
@@ -49,5 +42,5 @@ void XEventLoop::exec()
 
 void XEventLoop::quit()
 {
-    d_ptr->m_isQuit = true;
+    m_isQuit = true;
 }

@@ -16,7 +16,22 @@ XTcpClient::XTcpClient()
 
 XTcpClient::~XTcpClient()
 {
-    Stop();
+    d_ptr->m_running = false;
+    if (d_ptr->m_worker)
+    {
+        d_ptr->m_worker->join();
+        delete d_ptr->m_worker;
+        d_ptr->m_worker = nullptr;
+    }
+
+    if (d_ptr->m_sk)
+    {
+        d_ptr->m_sk->close();
+        delete d_ptr->m_sk;
+        d_ptr->m_sk = nullptr;
+    }
+
+    delete d_ptr;
 }
 
 bool XTcpClient::Start()
@@ -146,13 +161,23 @@ void XTcpClient::OnConnect(const boost::system::error_code &error)
     if (error)
     {
         XERROR << "XTcpClient::OnConnect connect error :"<<error;
-         m_connetTimer.start();
+        m_connetTimer.start();
         //this->ConnectAsync();
     }
     else
     {
         XDEBUG << "XTcpClient::OnConnect\t" <<m_serverIp <<m_serverPort;
-        m_handler ? this->RecvDataAsyncCustom() : this->RecvDataAsync();
+
+        if (m_handler)
+        {
+            m_handler("connect",7);
+            this->RecvDataAsyncCustom();
+        }
+        else
+        {
+            this->RecvDataAsync();
+        }
+
         //开始心跳检测
         if ( mb_heartCheck)
              m_heartPacket.Start();
@@ -232,7 +257,7 @@ void XTcpClient::OnRecvCustom(const boost::system::error_code &error, size_t byt
         auto dataDealCallback = [this](char * data, int length)
         {
 
-            if ( mb_heartCheck == false ||  m_heartPacket.OnRecv(data, length) == false)
+            if (mb_heartCheck == false ||  m_heartPacket.OnRecv(data, length) == false)
                 this->m_handler(data, length);
         };
 

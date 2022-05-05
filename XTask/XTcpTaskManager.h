@@ -20,8 +20,8 @@ public:
 
 protected:
     bool ClearCurrentTask(std::string taskid);
-    int TaskHandler(XSocketSession * session, const char * data, int length);
-    int DispatchTask(XSocketSession * session, const Json::Value& task);
+    int TaskHandler(VXSocketSession * session, const char * data, int length);
+    int DispatchTask(VXSocketSession * session, const Json::Value& task);
 
 private:
     std::shared_ptr<XTcpServer> m_tcpServer;

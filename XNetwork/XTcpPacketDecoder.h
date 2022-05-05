@@ -1,8 +1,7 @@
 #ifndef XTCPPACKETDECODER_H
 #define XTCPPACKETDECODER_H
-#include "XSocketBase.h"
-
-class XTcpPacketDecoder:public XPacketCodec
+#include "XApi/VXPacketCodec.h"
+class XTcpPacketDecoder:public VXPacketCodec
 {
 public:
     XTcpPacketDecoder();

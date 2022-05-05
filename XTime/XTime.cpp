@@ -4,7 +4,7 @@
 #include <thread>
 using namespace std;
 
-X_FACTORY_IMPL(XTime,MODULE_TIME_API,"Time related API")
+X_FACTORY_IMPL(XTime,MODULE_TIME_API,"XTimeManager")
 
 XTime::XTime()
 {

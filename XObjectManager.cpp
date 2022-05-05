@@ -51,7 +51,7 @@ int XObjectManager::Register(VXFactory *factory)
         return -1;
     }
     d_ptr->m_factories.insert(std::make_pair(key, factory));
-    XDEBUG << "XObjectManager::Register:\t key:" << key << ", description:" << factory->getDescrip();
+    XINFO << "XObjectManager::Register:\t key:" << key << ", description:" << factory->getDescrip();
     return (int)d_ptr->m_factories.size();
 }
 

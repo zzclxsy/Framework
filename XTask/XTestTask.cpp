@@ -9,6 +9,7 @@ XTestTask::XTestTask(const Json::Value& task, XTcpTaskManager * m)
 
     m_taskId = task[TASK_KEY_ID].asString();
     m_data = task;
+    m_taskName = task[TASK_KEY_NAME].asString();
 }
 
 void XTestTask::TaskDataUpdata(const Json::Value &task)
@@ -16,7 +17,7 @@ void XTestTask::TaskDataUpdata(const Json::Value &task)
     m_data = task;
 }
 
-void XTestTask::SetTaskClient(XSocketSession *client)
+void XTestTask::SetTaskClient(VXSocketSession *client)
 {
     mp_client = client;
 }
@@ -27,9 +28,13 @@ void XTestTask::StartTask()
     Json::Value respData;
     respData[TASK_KEY_ID] = taskId;
     respData[RRPLY_TASK_TYPE] = task_start;
-    respData[RRPLY_TASK_STATUS] = "yes";
     std::string buffer = XUtils::JsonToString(respData);
     mp_client->SendDataAsync(buffer.c_str(), (int)buffer.size());
+}
+
+const std::string &XTestTask::GetTaskName()
+{
+    return m_taskName;
 }
 
 const std::string &XTestTask::GetId()
@@ -58,7 +63,6 @@ void XTestTask::TaskUpdate(const Json::Value &data)
 
     respData[TASK_KEY_ID] = m_taskId;
     respData[RRPLY_TASK_TYPE] = task_updata;
-    respData[RRPLY_TASK_STATUS]= "yes";
     respData[RRPLY_TASK_RESULT] = data;
 
     std::string respBuffer = XUtils::JsonToString(respData);
@@ -71,7 +75,6 @@ void XTestTask::TaskFinished(const Json::Value &data)
 
     respData[TASK_KEY_ID] = m_taskId;
     respData[RRPLY_TASK_TYPE] = task_finished;
-    respData[RRPLY_TASK_STATUS]= "yes";
     respData[RRPLY_TASK_RESULT] = data;
 
     std::string respBuffer = XUtils::JsonToString(respData);
@@ -84,7 +87,6 @@ void XTestTask::TaskErrorAbort(const Json::Value &data)
 
     respData[TASK_KEY_ID] = m_taskId;
     respData[RRPLY_TASK_TYPE] = task_burst_error;
-    respData[RRPLY_TASK_STATUS]= "yes";
     respData[RRPLY_TASK_ERROR] = data;
 
     std::string respBuffer = XUtils::JsonToString(respData);

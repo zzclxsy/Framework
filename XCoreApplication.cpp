@@ -1,12 +1,17 @@
 #include "XCoreApplication.h"
 #include "./XEvent/XEvent.h"
+#include "XLogPrint/XLogPrint.h"
 #include "XTime/XTime.h"
 #include "XObjectManager.h"
 #include "XConfig/XConfigManager.h"
+#include "XNetwork/XTcpClient.h"
+#include "XNetwork/XTcpServer.h"
+#include "XTask/XTcpTaskManager.h"
 #include <assert.h>
 #include <string>
 #include <mutex>
 #include "XApi/VXApi.h"
+#include <thread>
 class XCoreApplicationPrivate
 {
 public:
@@ -33,8 +38,6 @@ XCoreApplication::XCoreApplication(int argc, char **argv)
     d_ptr->m_isQuit = false;
     d_ptr->mp_objectManager = new XObjectManager;
 
-    initTimeModule();
-
     for (int i = 0; i < argc; ++i){
         d_ptr->m_arguments.push_back(std::string(argv[i]));
     }
@@ -57,10 +60,12 @@ XCoreApplication::XCoreApplication(int argc, char **argv)
         d_ptr->m_appPath = fullPath.substr(0, fullPath.find_last_of('/'));
         d_ptr->m_appName = fullPath.substr(fullPath.find_last_of('/') + 1);
     }
-
+    //注册时间模块
+	this->Register(new X_FACTORY_NAME(XTime));
     //注册配置管理模块
     this->Register(new X_FACTORY_NAME(XConfigManager));
-    this->GetModule(MODULE_CONFIG_ID);
+    //注册TcpTask管理模块
+    this->Register(new X_FACTORY_NAME(XTcpTaskManager));
 }
 
 void XCoreApplication::exec()
@@ -68,14 +73,20 @@ void XCoreApplication::exec()
     static int index = 0;
     while(!d_ptr->m_isQuit)
     {
+
         if ((unsigned int)index == d_ptr->m_allEvent.size())
             index = 0;
 
         if (d_ptr->m_allEvent.size() == 0)
             continue;
 
+        //防止事件被移除，导致索引溢出
+        if (d_ptr->m_mutex.try_lock() == false)
+            continue;
+        
         XEvent *event = d_ptr->m_allEvent.at(index);
         event->doWork();
+        d_ptr->m_mutex.unlock();
         index++;
     }
 }
@@ -85,12 +96,15 @@ void XCoreApplication::quit()
     d_ptr->m_isQuit = true;
 }
 
-void XCoreApplication::initTimeModule()
+
+std::shared_ptr<VXTcpClient> XCoreApplication::CreateTcpClient()
 {
-    this->Register(new X_FACTORY_NAME(XTime));
-    VXModule * module1 = d_ptr->mp_objectManager->GetModule(MODULE_TIME_API);
-    assert(module1 != nullptr);
-    module1->Initialize("");
+    return std::make_shared<XTcpClient>();
+}
+
+std::shared_ptr<VXTcpServer> XCoreApplication::CreateTcpServer()
+{
+    return std::make_shared<XTcpServer>();
 }
 
 void XCoreApplication::addEvent(XEvent *event)
@@ -109,7 +123,7 @@ void XCoreApplication::removeEvent(XEvent *event)
         if ((*it) == event)
         {
             d_ptr->m_allEvent.erase(it);
-            return;
+            break;
         }
         it++;
     }
@@ -164,4 +178,8 @@ VXModuleConfig *XGetConfigModule()
 VXModuleTest *XGetPGMTest()
 {
     return XCoreApplication::GetXService<VXModuleTest>(MODULE_TEST_PGM_ID);
+}
+VXTaskManager *XGetTcpTaskManager()
+{
+    return XCoreApplication::GetXService<VXTaskManager>(MODULE_TASKMANAGER);
 }

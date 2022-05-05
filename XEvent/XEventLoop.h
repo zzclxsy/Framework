@@ -2,7 +2,6 @@
 #define XEVENTLOOP_H
 #include "XEvent.h"
 
-class XEventLoopPrivate;
 class XEventLoop : public XEvent
 {
 public:
@@ -12,7 +11,7 @@ public:
     void quit();
 
 private:
-    XEventLoopPrivate *d_ptr;
+    bool m_isQuit;
 };
 
 #endif // XEVENTLOOP_H

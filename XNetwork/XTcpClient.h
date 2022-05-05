@@ -17,7 +17,7 @@ public:
     virtual int SendData(const char * data, int length);
     virtual int SendDataAsync(const char * data, int length);
 
-    void SetHeartCheck();
+    virtual void SetHeartCheck();
 
 private:
     void WorkerProc();
@@ -40,7 +40,6 @@ private:
     TCP::socket * m_sk;
     TCP::endpoint m_endPoint;
     bool mb_heartCheck;
-    XTcpClient *q_ptr;
     XTimerEvent m_connetTimer;
 
 };

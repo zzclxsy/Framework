@@ -122,13 +122,16 @@ std::set<XTcpSession *> XTcpServer::totalTcpSession()
     return  m_sessionMap;
 }
 
+void XTcpServer::SetHeartCheck()
+{
+    d_ptr->mb_heartCheck = true;
+}
 
 
 
 
 XTcpSession::XTcpSession(XTcpServer *tcpServer):m_socket(tcpServer->m_ioctx)
 {
-
     m_tcpServer = tcpServer;
     memset( m_recvBuffer, 0,  TCP_RECV_BUFFER_SIZE);
     m_dataSize = 0;
