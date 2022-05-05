@@ -17,22 +17,22 @@ XTcpHeartPacket::XTcpHeartPacket()
 			XDEBUG << "no recv heart packet";
 			mb_start = false;
 			m_sendHeartTimer->stop();
-			mp_socket->close();
+            m_closeSocket();
 		}, true);
 
 	m_sendHeartTimer->setTimer(3000, [&]()
 		{
-			m_callback("heart", 5);
+            m_sendCallback("heart", 5);
 			mb_recvHeart = false;
 			m_timeroutTimer->start();
 		});
     m_sendHeartTimer->usingThread(true);
 }
 
-void XTcpHeartPacket::SetParameter(boost::asio::ip::tcp::socket * sock, sendCallback callback)
+void XTcpHeartPacket::SetParameter(closeSocket close, sendCallback send)
 {
-    mp_socket = sock;
-    m_callback = callback;
+    m_closeSocket = close;
+    m_sendCallback = send;
 }
 
 bool XTcpHeartPacket::OnRecv(char *data, int length)

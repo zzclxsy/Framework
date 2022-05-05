@@ -11,7 +11,7 @@ XTcpClient::XTcpClient()
      m_running = false;
      m_sk= nullptr;
      mb_heartCheck = false;
-     m_connetTimer.setTimer(3000, [&](){this->ConnectAsync();},true);
+     m_linked = E_TCP_LINK::E_Disconnected;
 }
 
 XTcpClient::~XTcpClient()
@@ -42,7 +42,7 @@ bool XTcpClient::Start()
      m_endPoint.address(boost::asio::ip::address_v4::from_string(m_serverIp));
      m_endPoint.port(m_serverPort);
      m_sk = new TCP::socket(m_ioctx);
-     m_heartPacket.SetParameter( m_sk, std::bind(&XTcpClient::SendDataAsync,this,std::placeholders::_1,std::placeholders::_2));
+     m_heartPacket.SetParameter( std::bind(&XTcpClient::OnDisconnect,this), std::bind(&XTcpClient::SendDataAsync,this,std::placeholders::_1,std::placeholders::_2));
 
      m_running = true;
      m_worker = new std::thread([this](){
@@ -137,11 +137,15 @@ void XTcpClient::SetHeartCheck()
 
 void XTcpClient::WorkerProc()
 {
-    this->ConnectAsync();
-
     while ( m_running)
     {
-        m_ioctx.run_for(std::chrono::milliseconds(100));
+        if (m_linked == E_TCP_LINK::E_Disconnected)
+        {
+            this->ConnectAsync();
+            m_linked = E_TCP_LINK::E_Connecting;
+        }
+
+        m_ioctx.run_for(std::chrono::milliseconds(1000));
     }
 }
 
@@ -152,6 +156,7 @@ void XTcpClient::ConnectAsync()
                 boost::bind(&XTcpClient::OnConnect,
                             this,
                           boost::asio::placeholders::error));
+
 }
 
 void XTcpClient::OnConnect(const boost::system::error_code &error)
@@ -159,8 +164,8 @@ void XTcpClient::OnConnect(const boost::system::error_code &error)
     if (error)
     {
         XERROR << "XTcpClient::OnConnect connect error :"<<error;
-        m_connetTimer.start();
-        //this->ConnectAsync();
+        m_linked = E_TCP_LINK::E_Disconnected;
+        OnDisconnect();
     }
     else
     {
@@ -179,6 +184,8 @@ void XTcpClient::OnConnect(const boost::system::error_code &error)
         //开始心跳检测
         if ( mb_heartCheck)
              m_heartPacket.Start();
+
+        m_linked = E_TCP_LINK::E_Connected;
     }
 }
 
@@ -291,7 +298,12 @@ void XTcpClient::OnSend(const boost::system::error_code &error, size_t bytesTran
 
 void XTcpClient::OnDisconnect()
 {
-    XERROR << "XTcpClient::OnDisconnect ";
-    m_sk->close();
-    this->ConnectAsync();
+    if (m_sk->is_open())
+    {
+        XERROR << "XTcpClient::OnDisconnect";
+        m_sk->close();
+
+        if ( m_linked == E_TCP_LINK::E_Connected)
+            m_linked = E_TCP_LINK::E_Disconnected;
+    }
 }

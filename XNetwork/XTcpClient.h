@@ -7,7 +7,12 @@
 typedef boost::asio::ip::tcp TCP;
 class XTcpClient:public XSocketClient
 {
-
+    typedef enum
+    {
+       E_Disconnected,
+       E_Connecting,
+       E_Connected
+    }E_TCP_LINK;
 public:
     XTcpClient();
     virtual ~XTcpClient();
@@ -40,8 +45,7 @@ private:
     TCP::socket * m_sk;
     TCP::endpoint m_endPoint;
     bool mb_heartCheck;
-    XTimerEvent m_connetTimer;
-
+    E_TCP_LINK m_linked; //0 未连接，1 正在连接，2已连接
 };
 
 #endif // XTCPCLIENT_H

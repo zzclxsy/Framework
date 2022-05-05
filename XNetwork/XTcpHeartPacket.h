@@ -8,10 +8,10 @@ class XTcpHeartPacket
 {
     typedef boost::asio::ip::tcp TCP;
     typedef std::function<int (const char * data, int length)> sendCallback;
-
+    typedef std::function<void ()> closeSocket;
 public:
     XTcpHeartPacket();
-    void SetParameter(TCP::socket *, sendCallback callback);
+    void SetParameter(closeSocket close, sendCallback send);
     bool OnRecv(char * data, int length);
     void Start();
     void Stop();
@@ -21,7 +21,8 @@ private:
 
 private:
     TCP::socket *mp_socket;
-    sendCallback m_callback;
+    sendCallback m_sendCallback;
+    closeSocket m_closeSocket;
     bool mb_start;
     bool mb_recvHeart;
     std::shared_ptr<XTimerEvent> m_sendHeartTimer;
