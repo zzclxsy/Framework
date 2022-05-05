@@ -124,7 +124,7 @@ std::set<XTcpSession *> XTcpServer::totalTcpSession()
 
 void XTcpServer::SetHeartCheck()
 {
-    d_ptr->mb_heartCheck = true;
+    mb_heartCheck = true;
 }
 
 

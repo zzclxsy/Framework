@@ -3,7 +3,7 @@
 #include "XSocketBase.h"
 #include <set>
 #include <queue>
-
+#include "XApi/VXPacketCodec.h"
 typedef boost::asio::ip::tcp TCP;
 class XTcpSession
         : public VXSocketSession
@@ -46,7 +46,7 @@ protected:
 protected:
     TCP::socket m_socket;
     XTcpServer * m_tcpServer;
-    XPacketCodec * m_codec;
+    VXPacketCodec * m_codec;
 
     std::thread * m_worker;
     bool m_running;
@@ -87,7 +87,7 @@ protected:
 protected:
     std::thread * m_worker;
     bool m_running;
-
+    bool mb_heartCheck;
     TCP::acceptor * m_acceptor;
     std::set<XTcpSession *> m_sessionMap;
     std::queue<XTcpSession *> m_trash;

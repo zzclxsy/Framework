@@ -16,22 +16,20 @@ XTcpClient::XTcpClient()
 
 XTcpClient::~XTcpClient()
 {
-    d_ptr->m_running = false;
-    if (d_ptr->m_worker)
+    m_running = false;
+    if ( m_worker)
     {
-        d_ptr->m_worker->join();
-        delete d_ptr->m_worker;
-        d_ptr->m_worker = nullptr;
+         m_worker->join();
+        delete  m_worker;
+         m_worker = nullptr;
     }
 
-    if (d_ptr->m_sk)
+    if ( m_sk)
     {
-        d_ptr->m_sk->close();
-        delete d_ptr->m_sk;
-        d_ptr->m_sk = nullptr;
+         m_sk->close();
+        delete  m_sk;
+         m_sk = nullptr;
     }
-
-    delete d_ptr;
 }
 
 bool XTcpClient::Start()
