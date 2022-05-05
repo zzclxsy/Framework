@@ -5,10 +5,10 @@
 #include "VXModuleConfig.h"
 #include "VXModuleTest.h"
 #include "VXTcpServer.h"
+#include "VXTcpClient.h"
 #include "VXTaskManager.h"
 #include "VXModuleTypeDef.h"
 #include"VXFactory.h"
-
 VXTime * XGetTimeModule();
 VXModuleConfig *XGetConfigModule();
 VXModuleTest *XGetPGMTest();

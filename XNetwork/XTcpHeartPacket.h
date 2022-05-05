@@ -1,12 +1,10 @@
 #ifndef XTCPHEARTPACKET_H
 #define XTCPHEARTPACKET_H
-#include <boost/asio.hpp>
 #include <functional>
 #include "XEvent/XTimerEvent.h"
 #include <memory>
 class XTcpHeartPacket
 {
-    typedef boost::asio::ip::tcp TCP;
     typedef std::function<int (const char * data, int length)> sendCallback;
     typedef std::function<void ()> closeSocket;
 public:
@@ -20,7 +18,6 @@ private:
     void WorkerProc();
 
 private:
-    TCP::socket *mp_socket;
     sendCallback m_sendCallback;
     closeSocket m_closeSocket;
     bool mb_start;

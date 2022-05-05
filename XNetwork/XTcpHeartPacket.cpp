@@ -3,29 +3,28 @@
 XTcpHeartPacket::XTcpHeartPacket()
 {
     mb_start =false;
-    mp_socket = nullptr;
     mb_recvHeart = false;
 
-	m_sendHeartTimer = std::make_shared<XTimerEvent>();
-	m_timeroutTimer = std::make_shared<XTimerEvent>();
+    m_sendHeartTimer = std::make_shared<XTimerEvent>();
+    m_timeroutTimer = std::make_shared<XTimerEvent>();
 
-	m_timeroutTimer->setTimer(1000, [&]()
-		{
-			if (mb_recvHeart)
-				return;
+    m_timeroutTimer->setTimer(1000, [&]()
+    {
+        if (mb_recvHeart)
+            return;
 
-			XDEBUG << "no recv heart packet";
-			mb_start = false;
-			m_sendHeartTimer->stop();
-            m_closeSocket();
-		}, true);
+        XDEBUG << "no recv heart packet";
+        mb_start = false;
+        m_sendHeartTimer->stop();
+        m_closeSocket();
+    }, true);
 
-	m_sendHeartTimer->setTimer(3000, [&]()
-		{
-            m_sendCallback("heart", 5);
-			mb_recvHeart = false;
-			m_timeroutTimer->start();
-		});
+    m_sendHeartTimer->setTimer(3000, [&]()
+    {
+        m_sendCallback("heart", 5);
+        mb_recvHeart = false;
+        m_timeroutTimer->start();
+    });
     m_sendHeartTimer->usingThread(true);
 }
 
@@ -42,12 +41,6 @@ bool XTcpHeartPacket::OnRecv(char *data, int length)
 
     if (length != 5)
         return false;
-
-    if (mp_socket->is_open() == false)
-    {
-        Stop();
-        return false;
-    }
 
     if (memcmp(data, "heart", 5) == 0)
     {

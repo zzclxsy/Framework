@@ -8,11 +8,10 @@
 #include <set>
 #include <list>
 #include <stdarg.h>
-
+#include <mutex>
 class XLogDevice;
 class XLogDeviceBase;
 class XLogRule;
-class XLogContentPrivate;
 
 class XLogContent
 {
@@ -29,7 +28,9 @@ public:
 
 private:
     static XLogContent *mp_instant;
-    XLogContentPrivate *d_ptr;
+    std::map<std::string, XLogDevice *> m_allDevice;
+    std::mutex m_mutex;
+    XLogContent *q_ptr;
 };
 
 class XLogger
