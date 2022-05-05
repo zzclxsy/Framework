@@ -5,7 +5,6 @@
 #include <queue>
 
 typedef boost::asio::ip::tcp TCP;
-class XTcpSessionPrivate;
 class XTcpSession
         : public XSocketSession
 {
@@ -45,11 +44,20 @@ protected:
     void OnSend(const boost::system::error_code& error, size_t bytesTransferred);
 
 protected:
-    XTcpSessionPrivate *d_ptr;
+    TCP::socket m_socket;
+    XTcpServer * m_tcpServer;
+    XPacketCodec * m_codec;
+
+    std::thread * m_worker;
+    bool m_running;
+
+    static const int TCP_RECV_BUFFER_SIZE = 131072;
+
+    char m_recvBuffer[TCP_RECV_BUFFER_SIZE];
+    int m_dataSize;
 
 };
 
-class XTcpServerPrivate;
 class XTcpServer
         : public XSocketServer
         , public XTcpSession::Callback
@@ -76,7 +84,13 @@ protected:
     virtual void OnDisconnect(XTcpSession * session);
 
 protected:
-    XTcpServerPrivate *d_ptr;
+    std::thread * m_worker;
+    bool m_running;
+
+    TCP::acceptor * m_acceptor;
+    std::set<XTcpSession *> m_sessionMap;
+    std::queue<XTcpSession *> m_trash;
+    std::mutex m_lock;
 };
 
 

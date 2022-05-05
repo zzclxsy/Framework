@@ -1,55 +1,38 @@
 #include "XTcpClient.h"
 #include <boost/bind.hpp>
 #include "../Framework/XLogPrint/XLogPrint.h"
-#include "XTcpHeartPacket.h"
-#include "XEvent/XTimerEvent.h"
-typedef boost::asio::ip::tcp TCP;
-class XTcpClientPrivate
-{
-public:
-    std::thread *m_worker;
-    bool m_running;
-    XTcpHeartPacket m_heartPacket;
-    TCP::socket * m_sk;
-    TCP::endpoint m_endPoint;
-    bool mb_heartCheck;
-    XTcpClient *q_ptr;
-    XTimerEvent m_connetTimer;
 
-};
+
+
 
 XTcpClient::XTcpClient()
 {
-    d_ptr = new XTcpClientPrivate;
-    d_ptr->q_ptr = this;
-
-    d_ptr->m_worker = nullptr;
-    d_ptr->m_running = false;
-    d_ptr->m_sk= nullptr;
-    d_ptr->mb_heartCheck = false;
-    d_ptr->m_connetTimer.setTimer(3000, [&](){this->ConnectAsync();},true);
+     m_worker = nullptr;
+     m_running = false;
+     m_sk= nullptr;
+     mb_heartCheck = false;
+     m_connetTimer.setTimer(3000, [&](){this->ConnectAsync();},true);
 }
 
 XTcpClient::~XTcpClient()
 {
     Stop();
-    delete d_ptr;
 }
 
 bool XTcpClient::Start()
 {
-    if (d_ptr->m_worker != nullptr)
+    if ( m_worker != nullptr)
     {
-        return d_ptr->m_running;
+        return  m_running;
     }
 
-    d_ptr->m_endPoint.address(boost::asio::ip::address_v4::from_string(m_serverIp));
-    d_ptr->m_endPoint.port(m_serverPort);
-    d_ptr->m_sk = new TCP::socket(m_ioctx);
-    d_ptr->m_heartPacket.SetParameter(d_ptr->m_sk, std::bind(&XTcpClient::SendDataAsync,this,std::placeholders::_1,std::placeholders::_2));
+     m_endPoint.address(boost::asio::ip::address_v4::from_string(m_serverIp));
+     m_endPoint.port(m_serverPort);
+     m_sk = new TCP::socket(m_ioctx);
+     m_heartPacket.SetParameter( m_sk, std::bind(&XTcpClient::SendDataAsync,this,std::placeholders::_1,std::placeholders::_2));
 
-    d_ptr->m_running = true;
-    d_ptr->m_worker = new std::thread([this](){
+     m_running = true;
+     m_worker = new std::thread([this](){
         try{
             this->WorkerProc();
         }
@@ -68,19 +51,19 @@ bool XTcpClient::Start()
 
 void XTcpClient::Stop()
 {
-    d_ptr->m_running = false;
-    if (d_ptr->m_worker)
+     m_running = false;
+    if ( m_worker)
     {
-        d_ptr->m_worker->join();
-        delete d_ptr->m_worker;
-        d_ptr->m_worker = nullptr;
+         m_worker->join();
+        delete  m_worker;
+         m_worker = nullptr;
     }
 
-    if (d_ptr->m_sk)
+    if ( m_sk)
     {
-        d_ptr->m_sk->close();
-        delete d_ptr->m_sk;
-        d_ptr->m_sk = nullptr;
+         m_sk->close();
+        delete  m_sk;
+         m_sk = nullptr;
     }
 }
 
@@ -90,7 +73,7 @@ int XTcpClient::SendData(const char *data, int length)
     {
         try
         {
-            d_ptr->m_sk->send(boost::asio::buffer(p, len));
+             m_sk->send(boost::asio::buffer(p, len));
         }
         catch(...)
         {
@@ -98,7 +81,7 @@ int XTcpClient::SendData(const char *data, int length)
         }
     };
 
-    if (d_ptr->m_sk->is_open())
+    if ( m_sk->is_open())
     {
         if (m_codec)
             m_codec->Encode((char *)data, length, sendCallBack);
@@ -114,7 +97,7 @@ int XTcpClient::SendDataAsync(const char *data, int length)
 {
     auto sendCallBack = [this](char * data, int length)
     {
-        d_ptr->m_sk->async_send(
+         m_sk->async_send(
                     boost::asio::buffer(data, length),
                     boost::bind(&XTcpClient::OnSend,
                                 this,
@@ -122,7 +105,7 @@ int XTcpClient::SendDataAsync(const char *data, int length)
                                 boost::asio::placeholders::bytes_transferred));
     };
 
-    if (d_ptr->m_sk->is_open())
+    if ( m_sk->is_open())
     {
         if (m_codec)
             m_codec->Encode((char *)data, length, sendCallBack);
@@ -136,14 +119,14 @@ int XTcpClient::SendDataAsync(const char *data, int length)
 
 void XTcpClient::SetHeartCheck()
 {
-    d_ptr->mb_heartCheck = true;
+     mb_heartCheck = true;
 }
 
 void XTcpClient::WorkerProc()
 {
     this->ConnectAsync();
 
-    while (d_ptr->m_running)
+    while ( m_running)
     {
         m_ioctx.run_for(std::chrono::milliseconds(100));
     }
@@ -151,8 +134,8 @@ void XTcpClient::WorkerProc()
 
 void XTcpClient::ConnectAsync()
 {
-    d_ptr->m_sk->async_connect(
-                d_ptr->m_endPoint,
+     m_sk->async_connect(
+                 m_endPoint,
                 boost::bind(&XTcpClient::OnConnect,
                             this,
                           boost::asio::placeholders::error));
@@ -163,7 +146,7 @@ void XTcpClient::OnConnect(const boost::system::error_code &error)
     if (error)
     {
         XERROR << "XTcpClient::OnConnect connect error :"<<error;
-        d_ptr->m_connetTimer.start();
+         m_connetTimer.start();
         //this->ConnectAsync();
     }
     else
@@ -171,14 +154,14 @@ void XTcpClient::OnConnect(const boost::system::error_code &error)
         XDEBUG << "XTcpClient::OnConnect\t" <<m_serverIp <<m_serverPort;
         m_handler ? this->RecvDataAsyncCustom() : this->RecvDataAsync();
         //开始心跳检测
-        if (d_ptr->mb_heartCheck)
-            d_ptr->m_heartPacket.Start();
+        if ( mb_heartCheck)
+             m_heartPacket.Start();
     }
 }
 
 void XTcpClient::RecvDataAsync()
 {
-    d_ptr->m_sk->async_read_some(
+     m_sk->async_read_some(
                 boost::asio::buffer(&m_recvBuffer[m_dataSize], RECV_BUFFER_SIZE - m_dataSize),
                 boost::bind(&XTcpClient::OnRecv,
                             this,
@@ -188,7 +171,7 @@ void XTcpClient::RecvDataAsync()
 
 void XTcpClient::RecvDataAsyncCustom()
 {
-    d_ptr->m_sk->async_read_some(
+     m_sk->async_read_some(
                 boost::asio::buffer(&m_recvBuffer[m_dataSize], RECV_BUFFER_SIZE - m_dataSize),
                 boost::bind(&XTcpClient::OnRecvCustom,
                             this,
@@ -210,7 +193,7 @@ void XTcpClient::OnRecv(const boost::system::error_code &error, size_t bytesTran
 
         auto dataDealCallback = [this](char * data, int length)
         {
-            if (d_ptr->mb_heartCheck || d_ptr->m_heartPacket.OnRecv(data, length) == false)
+            if ( mb_heartCheck ||  m_heartPacket.OnRecv(data, length) == false)
             {
                 this->m_dataBuffer.Write(data, length);
                 std::unique_lock <std::mutex> lock(this->m_cvLock);
@@ -249,7 +232,7 @@ void XTcpClient::OnRecvCustom(const boost::system::error_code &error, size_t byt
         auto dataDealCallback = [this](char * data, int length)
         {
 
-            if (d_ptr->mb_heartCheck == false || d_ptr->m_heartPacket.OnRecv(data, length) == false)
+            if ( mb_heartCheck == false ||  m_heartPacket.OnRecv(data, length) == false)
                 this->m_handler(data, length);
         };
 
@@ -286,6 +269,6 @@ void XTcpClient::OnSend(const boost::system::error_code &error, size_t bytesTran
 void XTcpClient::OnDisconnect()
 {
     XERROR << "XTcpClient::OnDisconnect ";
-    d_ptr->m_sk->close();
+    m_sk->close();
     this->ConnectAsync();
 }

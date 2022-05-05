@@ -2,34 +2,22 @@
 #include "../Framework/XLogPrint/XLogPrint.h"
 #include <boost/bind.hpp>
 
-class XTcpServerPrivate
-{
-public:
-    std::thread * m_worker;
-    bool m_running;
-
-    TCP::acceptor * m_acceptor;
-    std::set<XTcpSession *> m_sessionMap;
-    std::queue<XTcpSession *> m_trash;
-    std::mutex m_lock;
-};
 
 XTcpServer::XTcpServer()
 {
-    d_ptr = new XTcpServerPrivate;
-    d_ptr->m_worker = nullptr;
-    d_ptr->m_running = false;
+    m_worker = nullptr;
+    m_running = false;
 }
 
 bool XTcpServer::Start()
 {
-    if (d_ptr->m_worker)
+    if ( m_worker)
     {
-        return d_ptr->m_running;
+        return  m_running;
     }
 
-    d_ptr->m_running = true;
-    d_ptr->m_worker = new std::thread([this](){
+    m_running = true;
+    m_worker = new std::thread([this](){
         try{
             this->WorkerProc();
         }
@@ -48,8 +36,8 @@ bool XTcpServer::Start()
 
 void XTcpServer::Stop()
 {
-    auto it = d_ptr->m_sessionMap.begin();
-    while (it != d_ptr->m_sessionMap.end())
+    auto it =  m_sessionMap.begin();
+    while (it !=  m_sessionMap.end())
     {
         OnDisconnect((*it));
         it++;
@@ -59,10 +47,10 @@ void XTcpServer::Stop()
 void XTcpServer::WorkerProc()
 {
     boost::asio::ip::address ipAddress = boost::asio::ip::address::from_string(m_bindIp);
-    d_ptr->m_acceptor = new TCP::acceptor(m_ioctx, TCP::endpoint(ipAddress, m_bindPort));
+    m_acceptor = new TCP::acceptor(m_ioctx, TCP::endpoint(ipAddress, m_bindPort));
     this->Accept();
     XINFO <<"TcpServer starting success";
-    while (d_ptr->m_running)
+    while ( m_running)
     {
         m_ioctx.run_for(std::chrono::milliseconds(100));
     }
@@ -71,7 +59,7 @@ void XTcpServer::WorkerProc()
 void XTcpServer::Accept()
 {
     XTcpSession * session = new XTcpSession(this);
-    d_ptr->m_acceptor->async_accept(
+    m_acceptor->async_accept(
                 session->socket(),
                 boost::bind(
                     &XTcpServer::OnAccept,
@@ -84,7 +72,7 @@ void XTcpServer::OnAccept(XTcpSession *session, const boost::system::error_code 
 {
     if (!error)
     {
-        d_ptr->m_sessionMap.insert(session);
+        m_sessionMap.insert(session);
         session->Start();
         XINFO << session->RemoteIpAddress() <<"connect succeed" << " port :" << session->RemotePort();
         this->Accept();
@@ -113,15 +101,15 @@ void XTcpServer::OnDisconnect(XTcpSession *session)
 {
     XTcpSession * removedSession = nullptr;
 
-    d_ptr->m_lock.lock();
-    d_ptr->m_sessionMap.erase(session);
-    d_ptr->m_trash.push(session);
-    if (d_ptr->m_trash.size() > 20)
+    m_lock.lock();
+    m_sessionMap.erase(session);
+    m_trash.push(session);
+    if ( m_trash.size() > 20)
     {
-        removedSession = d_ptr->m_trash.front();
-        d_ptr->m_trash.pop();
+        removedSession =  m_trash.front();
+        m_trash.pop();
     }
-    d_ptr->m_lock.unlock();
+    m_lock.unlock();
 
     if (removedSession)
     {
@@ -131,78 +119,60 @@ void XTcpServer::OnDisconnect(XTcpSession *session)
 
 std::set<XTcpSession *> XTcpServer::totalTcpSession()
 {
-    return d_ptr->m_sessionMap;
+    return  m_sessionMap;
 }
 
 
 
 
-class XTcpSessionPrivate
+
+XTcpSession::XTcpSession(XTcpServer *tcpServer):m_socket(tcpServer->m_ioctx)
 {
-public:
-    XTcpSessionPrivate(XTcpServer *tcpServer):m_socket(tcpServer->m_ioctx){}
 
-    TCP::socket m_socket;
-    XTcpServer * m_tcpServer;
-    XPacketCodec * m_codec;
+    m_tcpServer = tcpServer;
+    memset( m_recvBuffer, 0,  TCP_RECV_BUFFER_SIZE);
+    m_dataSize = 0;
+    m_codec = tcpServer->m_codec;
 
-    std::thread * m_worker;
-    bool m_running;
-
-    static const int TCP_RECV_BUFFER_SIZE = 131072;
-
-    char m_recvBuffer[TCP_RECV_BUFFER_SIZE];
-    int m_dataSize;
-};
-
-XTcpSession::XTcpSession(XTcpServer *tcpServer)
-{
-    d_ptr = new XTcpSessionPrivate(tcpServer);
-
-    d_ptr->m_tcpServer = tcpServer;
-    memset(d_ptr->m_recvBuffer, 0, d_ptr->TCP_RECV_BUFFER_SIZE);
-    d_ptr->m_dataSize = 0;
-    d_ptr->m_codec = tcpServer->m_codec;
-
-    d_ptr->m_worker = nullptr;
-    d_ptr->m_running = false;
+    m_worker = nullptr;
+    m_running = false;
 }
 
 XTcpSession::~XTcpSession()
 {
-    d_ptr->m_running = false;
-    if (d_ptr->m_worker)
+    m_running = false;
+    if ( m_worker)
     {
-        d_ptr->m_worker->join();
-        delete d_ptr->m_worker;
-        d_ptr->m_worker = nullptr;
+        m_worker->join();
+        delete  m_worker;
+        m_worker = nullptr;
     }
 }
 
 boost::asio::ip::tcp::socket &XTcpSession::socket()
 {
-    return d_ptr->m_socket;
+    return  m_socket;
 }
 
 std::string XTcpSession::RemoteIpAddress()
 {
-    return d_ptr->m_socket.remote_endpoint().address().to_string();
+    return  m_socket.remote_endpoint().address().to_string();
 }
 
 int XTcpSession::RemotePort()
 {
-    return  d_ptr->m_socket.remote_endpoint().port();
+    return   m_socket.remote_endpoint().port();
 }
 
 int XTcpSession::Start()
 {
-    if (d_ptr->m_worker)
+    if ( m_worker)
     {
-        return d_ptr->m_running;
+        return  m_running;
     }
 
-    d_ptr->m_running = true;
-    d_ptr->m_worker = new std::thread([this](){
+    m_running = true;
+    m_worker = new std::thread([this](){
         try{
             this->WorkerProc();
         }
@@ -221,48 +191,48 @@ int XTcpSession::Start()
 
 void XTcpSession::Stop()
 {
-    d_ptr->m_running = false;
-    if (d_ptr->m_worker)
+    m_running = false;
+    if ( m_worker)
     {
-        d_ptr->m_worker->join();
-        delete d_ptr->m_worker;
-        d_ptr->m_worker = nullptr;
+        m_worker->join();
+        delete  m_worker;
+        m_worker = nullptr;
     }
 }
 
 void XTcpSession::WorkerProc()
 {
-    while (d_ptr->m_running)
+    while ( m_running)
     {
         try
         {
-            int dataLen = (int)d_ptr->m_socket.read_some(boost::asio::buffer(&d_ptr->m_recvBuffer[d_ptr->m_dataSize], d_ptr->TCP_RECV_BUFFER_SIZE - d_ptr->m_dataSize));
-            d_ptr->m_dataSize += dataLen;
+            int dataLen = (int) m_socket.read_some(boost::asio::buffer(& m_recvBuffer[ m_dataSize],  TCP_RECV_BUFFER_SIZE -  m_dataSize));
+            m_dataSize += dataLen;
 
             auto dataDeal = [this](char * data, int length)
             {
-                this->d_ptr->m_tcpServer->OnRecv(this, data, length);
+                this-> m_tcpServer->OnRecv(this, data, length);
             };
 
             //是否有解码
-            if (d_ptr->m_codec)
+            if ( m_codec)
             {
-                d_ptr->m_dataSize =d_ptr->m_codec->Decode(
-                            d_ptr->m_recvBuffer,
-                            d_ptr->m_dataSize,
+                m_dataSize = m_codec->Decode(
+                            m_recvBuffer,
+                            m_dataSize,
                             dataDeal);
             }
             else
             {
-                dataDeal(d_ptr->m_recvBuffer, d_ptr->m_dataSize);
-                memset(d_ptr->m_recvBuffer, 0, d_ptr->m_dataSize);
-                d_ptr->m_dataSize = 0;
+                dataDeal( m_recvBuffer,  m_dataSize);
+                memset( m_recvBuffer, 0,  m_dataSize);
+                m_dataSize = 0;
             }
         }
         catch(boost::system::system_error e)
         {
             XERROR << "XTcpSession::WorkerProc, error code:" << e.code();
-            d_ptr->m_tcpServer->OnDisconnect(this);
+            m_tcpServer->OnDisconnect(this);
             break;
         }
     }
@@ -282,19 +252,19 @@ int XTcpSession::SendData(const char *data, int length)
     {
         try
         {
-            this->d_ptr->m_socket.send(boost::asio::buffer(p, len));
+            this-> m_socket.send(boost::asio::buffer(p, len));
         }
         catch(boost::system::system_error e)
         {
             XERROR << "XTcpSession::SendData failed, error code:" << e.code();
-            this->d_ptr->m_tcpServer->OnDisconnect(this);
+            this-> m_tcpServer->OnDisconnect(this);
         }
     };
 
-    if (d_ptr->m_socket.is_open())
+    if ( m_socket.is_open())
     {
-        if (d_ptr->m_codec)
-            d_ptr->m_codec->Encode((char *)data, length, sendCallBack);
+        if ( m_codec)
+            m_codec->Encode((char *)data, length, sendCallBack);
         else
             sendCallBack((char *)data, length);
 
@@ -305,13 +275,13 @@ int XTcpSession::SendData(const char *data, int length)
 
 int XTcpSession::RecvDataAsync()
 {
-    if (!d_ptr->m_socket.is_open())
+    if (! m_socket.is_open())
     {
         return -1;
     }
 
-    d_ptr->m_socket.async_read_some(
-                boost::asio::buffer(&d_ptr->m_recvBuffer[d_ptr->m_dataSize], d_ptr->TCP_RECV_BUFFER_SIZE - d_ptr->m_dataSize),
+    m_socket.async_read_some(
+                boost::asio::buffer(& m_recvBuffer[ m_dataSize],  TCP_RECV_BUFFER_SIZE -  m_dataSize),
                 boost::bind(&XTcpSession::OnRecv,
                             this,
                             boost::asio::placeholders::error,
@@ -321,7 +291,7 @@ int XTcpSession::RecvDataAsync()
 
 int XTcpSession::SendDataAsync(const char *data, int length)
 {
-    if (!d_ptr->m_socket.is_open())
+    if (! m_socket.is_open())
     {
         return -1;
     }
@@ -329,17 +299,17 @@ int XTcpSession::SendDataAsync(const char *data, int length)
     auto sendCallBack = [this](char * p, int len)
     {
         boost::asio::async_write(
-                    this->d_ptr->m_socket,
+                    this-> m_socket,
                     boost::asio::buffer(p, len),
                     boost::bind(&XTcpSession::OnSend,
                                 this,
                                 boost::asio::placeholders::error,
                                 boost::asio::placeholders::bytes_transferred));
     };
-    if (d_ptr->m_socket.is_open())
+    if ( m_socket.is_open())
     {
-        if (d_ptr->m_codec)
-            d_ptr->m_codec->Encode((char *)data, length, sendCallBack);
+        if ( m_codec)
+            m_codec->Encode((char *)data, length, sendCallBack);
         else
             sendCallBack((char *)data, length);
     }
@@ -351,17 +321,17 @@ void XTcpSession::OnRecv(const boost::system::error_code &error, size_t bytesTra
     if (error)
     {
         XERROR << "XTcpSession::OnRecv failed, error code:" << error;
-        d_ptr->m_tcpServer->OnDisconnect(this);
+        m_tcpServer->OnDisconnect(this);
     }
     else if (bytesTransferred > 0)
     {
-        d_ptr->m_dataSize += (int)bytesTransferred;
+        m_dataSize += (int)bytesTransferred;
 
-        d_ptr->m_dataSize = d_ptr->m_codec->Decode(
-                    d_ptr->m_recvBuffer,
-                    d_ptr->m_dataSize,
+        m_dataSize =  m_codec->Decode(
+                    m_recvBuffer,
+                    m_dataSize,
                     [this](char * data, int length){
-            this->d_ptr->m_tcpServer->OnRecv(this, data, length);
+            this-> m_tcpServer->OnRecv(this, data, length);
         });
 
         this->RecvDataAsync();
@@ -373,10 +343,10 @@ void XTcpSession::OnSend(const boost::system::error_code &error, size_t bytesTra
     if (error)
     {
         XERROR << "XTcpSession::OnSend failed, error code:" << error;
-        d_ptr->m_tcpServer->OnDisconnect(this);
+        m_tcpServer->OnDisconnect(this);
     }
     else
     {
-        d_ptr->m_tcpServer->OnSend(this, nullptr, (int)bytesTransferred);
+        m_tcpServer->OnSend(this, nullptr, (int)bytesTransferred);
     }
 }

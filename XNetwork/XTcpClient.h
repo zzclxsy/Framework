@@ -2,8 +2,9 @@
 #define XTCPCLIENT_H
 
 #include "XSocketBase.h"
-
-class XTcpClientPrivate;
+#include "XTcpHeartPacket.h"
+#include "XEvent/XTimerEvent.h"
+typedef boost::asio::ip::tcp TCP;
 class XTcpClient:public XSocketClient
 {
 
@@ -32,7 +33,15 @@ private:
     void OnDisconnect();
 
 private:
-    XTcpClientPrivate *d_ptr;
+
+    std::thread *m_worker;
+    bool m_running;
+    XTcpHeartPacket m_heartPacket;
+    TCP::socket * m_sk;
+    TCP::endpoint m_endPoint;
+    bool mb_heartCheck;
+    XTcpClient *q_ptr;
+    XTimerEvent m_connetTimer;
 
 };
 
