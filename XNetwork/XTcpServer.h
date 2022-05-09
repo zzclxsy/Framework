@@ -63,7 +63,6 @@ class XTcpServer
         , public XTcpSession::Callback
 {
     friend class XTcpSession;
-    friend class XTcpSessionPrivate;
     typedef boost::asio::ip::tcp TCP;
 public:
     XTcpServer();

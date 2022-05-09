@@ -36,7 +36,7 @@ private:
     void OnRecvCustom(const boost::system::error_code& error, size_t bytesTransferred);
     void OnSend(const boost::system::error_code& error, size_t bytesTransferred);
     void OnDisconnect();
-
+    void closeSocket();
 private:
 
     std::thread *m_worker;

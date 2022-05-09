@@ -50,7 +50,6 @@ void XLogContent::removeDevice(std::string alias)
 
 XLogDevice *XLogContent::getDevice(std::string alias)
 {
-    m_mutex.lock();
     auto it = m_allDevice.begin();
     while (it != m_allDevice.end())
     {
@@ -58,7 +57,6 @@ XLogDevice *XLogContent::getDevice(std::string alias)
             return ((*it).second);
         it++;
     }
-    m_mutex.unlock();
     return nullptr;
 }
 

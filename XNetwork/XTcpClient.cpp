@@ -42,7 +42,7 @@ bool XTcpClient::Start()
      m_endPoint.address(boost::asio::ip::address_v4::from_string(m_serverIp));
      m_endPoint.port(m_serverPort);
      m_sk = new TCP::socket(m_ioctx);
-     m_heartPacket.SetParameter( std::bind(&XTcpClient::OnDisconnect,this), std::bind(&XTcpClient::SendDataAsync,this,std::placeholders::_1,std::placeholders::_2));
+     m_heartPacket.SetParameter( std::bind(&XTcpClient::closeSocket,this), std::bind(&XTcpClient::SendDataAsync,this,std::placeholders::_1,std::placeholders::_2));
 
      m_running = true;
      m_worker = new std::thread([this](){
@@ -137,21 +137,25 @@ void XTcpClient::SetHeartCheck()
 
 void XTcpClient::WorkerProc()
 {
+    this->ConnectAsync();
+
     while ( m_running)
     {
-        if (m_linked == E_TCP_LINK::E_Disconnected)
+        if (m_linked == E_Disconnected)
         {
-            this->ConnectAsync();
-            m_linked = E_TCP_LINK::E_Connecting;
+            m_sk->close();
+            ConnectAsync();
         }
 
         m_ioctx.run_for(std::chrono::milliseconds(1000));
+        XDEBUG << "void XTcpClient::WorkerProc";
     }
 }
 
 void XTcpClient::ConnectAsync()
 {
-     m_sk->async_connect(
+    m_linked = E_TCP_LINK::E_Connecting;
+    m_sk->async_connect(
                  m_endPoint,
                 boost::bind(&XTcpClient::OnConnect,
                             this,
@@ -164,8 +168,7 @@ void XTcpClient::OnConnect(const boost::system::error_code &error)
     if (error)
     {
         XERROR << "XTcpClient::OnConnect connect error :"<<error;
-        m_linked = E_TCP_LINK::E_Disconnected;
-        OnDisconnect();
+        ConnectAsync();
     }
     else
     {
@@ -298,12 +301,15 @@ void XTcpClient::OnSend(const boost::system::error_code &error, size_t bytesTran
 
 void XTcpClient::OnDisconnect()
 {
-    if (m_sk->is_open())
+    if ( (m_sk->is_open()) &&  m_linked == E_TCP_LINK::E_Connected)
     {
         XERROR << "XTcpClient::OnDisconnect";
         m_sk->close();
-
-        if ( m_linked == E_TCP_LINK::E_Connected)
-            m_linked = E_TCP_LINK::E_Disconnected;
+        ConnectAsync();
     }
+}
+
+void XTcpClient::closeSocket()
+{
+    m_linked = E_Disconnected;
 }

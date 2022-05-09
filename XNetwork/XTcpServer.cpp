@@ -129,8 +129,8 @@ void XTcpServer::SetHeartCheck()
 
 
 
-
-XTcpSession::XTcpSession(XTcpServer *tcpServer):m_socket(tcpServer->m_ioctx)
+XTcpSession::XTcpSession(XTcpServer *tcpServer)
+    :m_socket(tcpServer->m_ioctx)
 {
     m_tcpServer = tcpServer;
     memset( m_recvBuffer, 0,  TCP_RECV_BUFFER_SIZE);
