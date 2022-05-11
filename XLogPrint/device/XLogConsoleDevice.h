@@ -8,7 +8,7 @@ class XLogConsoleDevice:public XLogDeviceBase
 public:
     XLogConsoleDevice();
     virtual ~XLogConsoleDevice();
-    virtual bool PrintLog(std::string& log, PriorityLevel level);
+    virtual bool PrintLog(std::string& log, logLevel level);
 };
 
 #endif // XLOGCONSOLEDEVICE_H

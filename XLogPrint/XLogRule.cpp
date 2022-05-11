@@ -1,5 +1,5 @@
 #include "XLogRule.h"
-#include "XTime/XTime.h"
+#include "XApi/VXApi.h"
 #include "boost/filesystem.hpp"
 #include <mutex>
 #include <map>
@@ -24,7 +24,7 @@ public:
         return nullptr;
     }
 public:
-    PriorityLevel m_level;
+    logLevel m_level;
     callback m_printer;
     callback m_custSave;
     std::string m_debugHeader;
@@ -47,7 +47,7 @@ XLogRule::XLogRule()
 
     d_ptr->m_printer = nullptr;
     d_ptr->m_custSave = nullptr;
-    d_ptr->m_level = PriorityLevel::DEBUG;
+    d_ptr->m_level = logLevel::E_DEBUG;
     d_ptr->m_filePath = "";
     d_ptr->m_debugHeader = "<debug> ";
     d_ptr->m_warnHeader  = "<warn> ";
@@ -62,12 +62,12 @@ XLogRule::~XLogRule()
     delete d_ptr;
 }
 
-void XLogRule::setOutputLevel(PriorityLevel level)
+void XLogRule::setOutputLevel(logLevel level)
 {
     d_ptr->m_level = level;
 }
 
-PriorityLevel XLogRule::getOutputLevel()
+logLevel XLogRule::getOutputLevel()
 {
     return d_ptr->m_level;
 }
@@ -88,7 +88,7 @@ std::string XLogRule::onPacket(std::string &log)
     }
     else
     {
-        pack = "[" + XTime::instant()->toTimeString() + "] " + log;
+        pack = "[" + XGetTimeModule()->toTimeString() + "] " + log;
     }
 
     return pack;

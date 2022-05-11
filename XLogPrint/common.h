@@ -1,12 +1,13 @@
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef COMMONE_H
+#define COMMONE_H
 
 typedef enum
 {
-    ERROR = 0,
-    WARN = 100,
-    INFO = 200,
-    DEBUG = 300,
-}PriorityLevel;
+    E_ERROR = 0,
+    E_WARN = 100,
+    E_INFO = 200,
+    E_DEBUG = 300,
+}logLevel;
+
 
 #endif // COMMON_H

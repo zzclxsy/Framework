@@ -10,7 +10,7 @@ XLogConsoleDevice::~XLogConsoleDevice()
 
 }
 
-bool XLogConsoleDevice::PrintLog(std::string& log, PriorityLevel level)
+bool XLogConsoleDevice::PrintLog(std::string& log, logLevel level)
 {
     if (XLogDeviceBase::PrintLog(log, level) == false)
         return false;

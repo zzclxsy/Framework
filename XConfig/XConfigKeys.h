@@ -1,0 +1,4 @@
+#ifndef XCONFIGKEYS_H
+#define XCONFIGKEYS_H
+
+#endif // XCONFIGKEYS_H

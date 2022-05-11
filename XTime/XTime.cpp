@@ -1,11 +1,14 @@
 #include "XTime.h"
 #include <chrono>
 #include <iostream>
+#include <thread>
 using namespace std;
-XTime* XTime::m_instant = nullptr;
+
+X_FACTORY_IMPL(XTime,MODULE_TIME_API,"XTimeManager")
+
 XTime::XTime()
 {
-
+    X_MODULE_INIT(XTime)
 }
 
 unsigned long long XTime::getMsecTimestamp()
@@ -39,10 +42,13 @@ std::string XTime::toTimeString(std::string format)
     return std::string(buff);
 }
 
-XTime *XTime::instant()
+void XTime::msleep(int msec)
 {
-    if (m_instant == nullptr)
-        m_instant = new XTime;
-
-    return m_instant;
+    std::this_thread::sleep_for(std::chrono::milliseconds(msec));
 }
+
+void XTime::sleep(int sec)
+{
+    std::this_thread::sleep_for(std::chrono::seconds(sec));
+}
+
