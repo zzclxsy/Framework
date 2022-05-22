@@ -49,10 +49,10 @@ XLogRule::XLogRule()
     d_ptr->m_custSave = nullptr;
     d_ptr->m_level = logLevel::E_DEBUG;
     d_ptr->m_filePath = "";
-    d_ptr->m_debugHeader = "<debug> ";
-    d_ptr->m_warnHeader  = "<warn> ";
-    d_ptr->m_infoHeader  = "<info> ";
-    d_ptr->m_errorHeader = "<error> ";
+    d_ptr->m_debugHeader = "[debug] ";
+    d_ptr->m_warnHeader  = "[warn] ";
+    d_ptr->m_infoHeader  = "[info] ";
+    d_ptr->m_errorHeader = "[error] ";
     d_ptr->mb_saveFlag = false;
     d_ptr->m_fileName = "logFile.ini";
 }

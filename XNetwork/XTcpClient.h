@@ -4,6 +4,7 @@
 #include "XSocketBase.h"
 #include "XTcpHeartPacket.h"
 #include "XEvent/XTimerEvent.h"
+#include <mutex>
 typedef boost::asio::ip::tcp TCP;
 class XTcpClient:public XSocketClient
 {
@@ -46,6 +47,7 @@ private:
     TCP::endpoint m_endPoint;
     bool mb_heartCheck;
     E_TCP_LINK m_linked; //0 未连接，1 正在连接，2已连接
+    std::mutex m_mutex;
 };
 
 #endif // XTCPCLIENT_H

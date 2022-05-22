@@ -148,7 +148,6 @@ void XTcpClient::WorkerProc()
         }
 
         m_ioctx.run_for(std::chrono::milliseconds(1000));
-        XDEBUG << "void XTcpClient::WorkerProc";
     }
 }
 
@@ -311,5 +310,8 @@ void XTcpClient::OnDisconnect()
 
 void XTcpClient::closeSocket()
 {
-    m_linked = E_Disconnected;
+    if ( (m_sk->is_open()) &&  m_linked == E_TCP_LINK::E_Connected)
+    {
+        m_linked = E_Disconnected;
+    }
 }

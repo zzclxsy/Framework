@@ -3,6 +3,7 @@
 #include "XCoreApplication.h"
 #include "XApi/VXApi.h"
 #include "memory"
+
 XLogTcpDevice::XLogTcpDevice()
 {
 
@@ -15,6 +16,15 @@ bool XLogTcpDevice::PrintLog(std::string &log, logLevel level)
 
     if (XLogDeviceBase::PrintLog(log, level) == false)
         return false;
+
+    if (level == logLevel::E_DEBUG)
+        log = "debugLog$" + log;
+    else if (level == logLevel::E_ERROR)
+        log = "errorLog$" + log;
+    else if (level == logLevel::E_INFO)
+        log = "infoLog$" + log;
+    else if (level == logLevel::E_WARN)
+        log = "warnLog$" + log;
 
     if (m_logClient->SendDataAsync(log.c_str(),log.size()) == -1)
     {
