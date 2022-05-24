@@ -22,7 +22,7 @@ public:
 
     virtual int SendData(const char * data, int length);
     virtual int SendDataAsync(const char * data, int length);
-
+    virtual void SetHeartHander(HeartHandler hander);
     virtual void SetHeartCheck();
 
 private:

@@ -130,6 +130,11 @@ int XTcpClient::SendDataAsync(const char *data, int length)
     return -1;
 }
 
+void XTcpClient::SetHeartHander(VXTcpClient::HeartHandler hander)
+{
+    m_heartPacket.setHeartHander(hander);
+}
+
 void XTcpClient::SetHeartCheck()
 {
      mb_heartCheck = true;
@@ -225,7 +230,7 @@ void XTcpClient::OnRecv(const boost::system::error_code &error, size_t bytesTran
 
         auto dataDealCallback = [this](char * data, int length)
         {
-            if ( mb_heartCheck ||  m_heartPacket.OnRecv(data, length) == false)
+            if ( mb_heartCheck ||  m_heartPacket.OnClientRecv(data, length) == false)
             {
                 this->m_dataBuffer.Write(data, length);
                 std::unique_lock <std::mutex> lock(this->m_cvLock);
@@ -264,7 +269,7 @@ void XTcpClient::OnRecvCustom(const boost::system::error_code &error, size_t byt
         auto dataDealCallback = [this](char * data, int length)
         {
 
-            if (mb_heartCheck == false ||  m_heartPacket.OnRecv(data, length) == false)
+            if (mb_heartCheck == false ||  m_heartPacket.OnClientRecv(data, length) == false)
                 this->m_handler(data, length);
         };
 

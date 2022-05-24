@@ -1,31 +1,20 @@
 #include "XTcpHeartPacket.h"
 #include "XLogPrint/XLogPrint.h"
+#include "XUtils.h"
 XTcpHeartPacket::XTcpHeartPacket()
 {
-    mb_start =false;
     mb_recvHeart = false;
+    mp_timerManager = TimerWheel::TimerManager::instant();
 
-    m_sendHeartTimer = std::make_shared<XTimerEvent>();
-    m_timeroutTimer = std::make_shared<XTimerEvent>();
+    m_sendHeartTimer.setManager(mp_timerManager);
+    m_timeroutTimer.setManager(mp_timerManager);
+    m_serverTimer.setManager(mp_timerManager);
 
-    m_timeroutTimer->setTimer(1000, [&]()
-    {
-        if (mb_recvHeart)
-            return;
+    m_timeroutTimer.SetParam(std::bind(&XTcpHeartPacket::timerOutFunc,this),1000, TimerWheel::Timer::ONCE);
+    m_serverTimer.SetParam(std::bind(&XTcpHeartPacket::ServerTimerOutFunc,this),6000,TimerWheel::Timer::ONCE);
+    m_sendHeartTimer.SetParam(std::bind(&XTcpHeartPacket::SendHeartFunc,this),3000);
 
-        XDEBUG << "no recv heart packet";
-        mb_start = false;
-        m_sendHeartTimer->stop();
-        m_closeSocket();
-    }, true);
-
-    m_sendHeartTimer->setTimer(3000, [&]()
-    {
-        m_sendCallback("heart", 5);
-        mb_recvHeart = false;
-        m_timeroutTimer->start();
-    });
-    m_sendHeartTimer->usingThread(true);
+    mp_timerManager->run();
 }
 
 void XTcpHeartPacket::SetParameter(closeSocket close, sendCallback send)
@@ -34,17 +23,41 @@ void XTcpHeartPacket::SetParameter(closeSocket close, sendCallback send)
     m_sendCallback = send;
 }
 
-bool XTcpHeartPacket::OnRecv(char *data, int length)
+void XTcpHeartPacket::setHeartHander(XTcpHeartPacket::heartHander hander)
 {
-    if (mb_start == false)
+    m_heartHander = hander;
+}
+
+bool XTcpHeartPacket::OnClientRecv(char *data, int length)
+{
+    Json::Value root;
+
+    if (XUtils::StringToJson(data, length, root) == false)
         return false;
 
-    if (length != 5)
-        return false;
-
-    if (memcmp(data, "heart", 5) == 0)
+    if (analysisPacket(root))
     {
         mb_recvHeart = true;
+        if (m_heartHander)
+            m_heartHander("", true);
+        return true;
+    }
+    return false;
+}
+
+bool XTcpHeartPacket::OnServerRecv(char *data, int length)
+{
+    Json::Value root;
+
+    if (XUtils::StringToJson(data, length, root) == false)
+        return false;
+
+    if (analysisPacket(root))
+    {
+        SendPacket();
+        m_serverTimer.Start();
+        if (m_heartHander)
+            m_heartHander("", true);
         return true;
     }
     return false;
@@ -52,18 +65,61 @@ bool XTcpHeartPacket::OnRecv(char *data, int length)
 
 void XTcpHeartPacket::Start()
 {
-    mb_start = true;
     WorkerProc();
 }
 
 void XTcpHeartPacket::Stop()
 {
-    mb_start = false;
-    m_sendHeartTimer->stop();
+    m_sendHeartTimer.Stop();
+}
+
+bool XTcpHeartPacket::analysisPacket(Json::Value &root)
+{
+    if (root.isMember("cmd"))
+    {
+        if (root["cmd"].asString() == "heart")
+        {
+            return true;
+        }
+    }
+    return false;
+}
+void XTcpHeartPacket::SendPacket()
+{
+    Json::Value root;
+    root["cmd"] = "heart";
+    std::string Packet = XUtils::JsonToString(root);
+    m_sendCallback(Packet.c_str(), Packet.size());
 }
 
 void XTcpHeartPacket::WorkerProc()
 {
     XDEBUG <<"start heart.";
-    m_sendHeartTimer->start();
+    m_sendHeartTimer.Start();
+}
+
+void XTcpHeartPacket::timerOutFunc()
+{
+    if (mb_recvHeart)
+        return;
+
+    m_sendHeartTimer.Stop();
+    m_closeSocket();
+    if (m_heartHander)
+        m_heartHander("", false);
+}
+
+void XTcpHeartPacket::ServerTimerOutFunc()
+{
+
+    if (m_heartHander)
+        m_heartHander("", false);
+
+}
+
+void XTcpHeartPacket::SendHeartFunc()
+{
+    SendPacket();
+    mb_recvHeart = false;
+    m_timeroutTimer.Start();
 }

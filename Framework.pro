@@ -20,7 +20,7 @@ include(./JsonCpp/JsonCpp.pri)
 include(./XApi/XApi.pri)
 include(./XConfig/XConfig.pri)
 include(./XTask/XTask.pri)
-
+include(./XTimer/XTimer.pri)
 # Default rules for deployment.
 unix {
     target.path = $$[QT_INSTALL_PLUGINS]/generic
@@ -29,10 +29,10 @@ unix {
 
 CONFIG(debug, debug|release) {
     TARGET = libFrameworkd
-    DESTDIR = $$PWD/../lib/debug
+    DESTDIR = E:\\lib\\x64\\debug\\XFramework
 } else {
     TARGET = libFramework
-    DESTDIR = $$PWD/../lib/release
+    DESTDIR = E:\\lib\\x64\\release\\XFramework
 }
 
 
@@ -51,6 +51,6 @@ SOURCES += \
 
 
 #boost库头文件，需要另行添加
-INCLUDEPATH += $$PWD/../ThirdParty/inc
+INCLUDEPATH += E:\\include
 #JsonCpp头文件
 INCLUDEPATH += $$PWD/JsonCpp/include

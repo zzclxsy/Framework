@@ -4,6 +4,7 @@
 #include <set>
 #include <queue>
 #include "XApi/VXPacketCodec.h"
+#include "XTcpHeartPacket.h"
 typedef boost::asio::ip::tcp TCP;
 class XTcpSession
         : public VXSocketSession
@@ -13,6 +14,12 @@ class XTcpSession
 public:
     XTcpSession(XTcpServer * tcpServer);
     ~XTcpSession();
+
+    enum LinkState{
+        linking,
+        linked,
+        disLink
+    };
 
     class Callback
     {
@@ -28,6 +35,8 @@ public:
     virtual int RemotePort();
     virtual int SendData(const char * data, int length);
     virtual int SendDataAsync(const char * data, int length);
+
+    void closeSocket();
 
 protected:
     int Start();
@@ -47,10 +56,10 @@ protected:
     TCP::socket m_socket;
     XTcpServer * m_tcpServer;
     VXPacketCodec * m_codec;
-
+    LinkState m_link;
     std::thread * m_worker;
     bool m_running;
-
+    XTcpHeartPacket m_heartPacket;
     static const int TCP_RECV_BUFFER_SIZE = 131072;
 
     char m_recvBuffer[TCP_RECV_BUFFER_SIZE];
@@ -82,7 +91,7 @@ protected:
     virtual void OnRecv(XTcpSession * session, char * data, int length);
     virtual void OnSend(XTcpSession * session, char * data, int length);
     virtual void OnDisconnect(XTcpSession * session);
-
+    virtual void SetHeartHander(HeartHandler hander);
 protected:
     std::thread * m_worker;
     bool m_running;
@@ -91,6 +100,7 @@ protected:
     std::set<XTcpSession *> m_sessionMap;
     std::queue<XTcpSession *> m_trash;
     std::mutex m_lock;
+    HeartHandler m_handle;
 };
 
 

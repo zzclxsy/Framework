@@ -100,7 +100,6 @@ void XTcpServer::OnSend(XTcpSession *session, char *data, int length)
 void XTcpServer::OnDisconnect(XTcpSession *session)
 {
     XTcpSession * removedSession = nullptr;
-
     m_lock.lock();
     m_sessionMap.erase(session);
     m_trash.push(session);
@@ -115,6 +114,11 @@ void XTcpServer::OnDisconnect(XTcpSession *session)
     {
         delete removedSession;
     }
+}
+
+void XTcpServer::SetHeartHander(VXTcpServer::HeartHandler hander)
+{
+    m_handle = hander;
 }
 
 std::set<XTcpSession *> XTcpServer::totalTcpSession()
@@ -139,6 +143,10 @@ XTcpSession::XTcpSession(XTcpServer *tcpServer)
 
     m_worker = nullptr;
     m_running = false;
+    m_link = linking;
+
+    m_heartPacket.SetParameter(std::bind(&XTcpSession::closeSocket,this), std::bind(&XTcpSession::SendDataAsync,this,std::placeholders::_1,std::placeholders::_2));
+    m_heartPacket.setHeartHander(m_tcpServer->m_handle);
 }
 
 XTcpSession::~XTcpSession()
@@ -205,48 +213,49 @@ void XTcpSession::Stop()
 
 void XTcpSession::WorkerProc()
 {
+    RecvDataAsync();
     while ( m_running)
     {
-        try
-        {
-            int dataLen = (int) m_socket.read_some(boost::asio::buffer(& m_recvBuffer[ m_dataSize],  TCP_RECV_BUFFER_SIZE -  m_dataSize));
-            m_dataSize += dataLen;
 
-            auto dataDeal = [this](char * data, int length)
-            {
-                this-> m_tcpServer->OnRecv(this, data, length);
-            };
-
-            //是否有解码
-            if ( m_codec)
-            {
-                m_dataSize = m_codec->Decode(
-                            m_recvBuffer,
-                            m_dataSize,
-                            dataDeal);
-            }
-            else
-            {
-                dataDeal( m_recvBuffer,  m_dataSize);
-                memset( m_recvBuffer, 0,  m_dataSize);
-                m_dataSize = 0;
-            }
-        }
-        catch(boost::system::system_error e)
-        {
-            XERROR << "XTcpSession::WorkerProc, error code:" << e.code();
-            m_tcpServer->OnDisconnect(this);
-            break;
-        }
     }
 }
 
 int XTcpSession::RecvData(char *buffer, int length)
 {
-    (void)buffer;
-    (void)length;
+    try
+    {
+        int dataLen = (int) m_socket.read_some(boost::asio::buffer(& m_recvBuffer[ m_dataSize],  TCP_RECV_BUFFER_SIZE -  m_dataSize));
+        m_dataSize += dataLen;
 
-    return -1;
+        auto dataDeal = [this](char * data, int length)
+        {
+            if (m_heartPacket.OnServerRecv(data, length) == false)
+                this-> m_tcpServer->OnRecv(this, data, length);
+        };
+
+        //是否有解码
+        if ( m_codec)
+        {
+            m_dataSize = m_codec->Decode(
+                        m_recvBuffer,
+                        m_dataSize,
+                        dataDeal);
+        }
+        else
+        {
+            dataDeal( m_recvBuffer,  m_dataSize);
+            memset( m_recvBuffer, 0,  m_dataSize);
+            m_dataSize = 0;
+        }
+    }
+    catch(boost::system::system_error e)
+    {
+        XERROR << "XTcpSession::WorkerProc, error code:" << e.code();
+        m_tcpServer->OnDisconnect(this);
+        return -1;
+    }
+
+    return 0;
 }
 
 int XTcpSession::SendData(const char *data, int length)
@@ -319,6 +328,11 @@ int XTcpSession::SendDataAsync(const char *data, int length)
     return 0;
 }
 
+void XTcpSession::closeSocket()
+{
+    m_link = disLink;
+}
+
 void XTcpSession::OnRecv(const boost::system::error_code &error, size_t bytesTransferred)
 {
     if (error)
@@ -330,12 +344,24 @@ void XTcpSession::OnRecv(const boost::system::error_code &error, size_t bytesTra
     {
         m_dataSize += (int)bytesTransferred;
 
-        m_dataSize =  m_codec->Decode(
-                    m_recvBuffer,
-                    m_dataSize,
-                    [this](char * data, int length){
-            this-> m_tcpServer->OnRecv(this, data, length);
-        });
+        auto dataDeal = [&](char * data, int length){
+
+            if (m_heartPacket.OnServerRecv(data, length) == false)
+                this-> m_tcpServer->OnRecv(this, data, length);
+        };
+        if (m_codec)
+        {
+            m_dataSize =  m_codec->Decode(
+                        m_recvBuffer,
+                        m_dataSize, dataDeal);
+        }
+        else
+        {
+            dataDeal( m_recvBuffer,  m_dataSize);
+            memset( m_recvBuffer, 0,  m_dataSize);
+            m_dataSize = 0;
+        }
+
 
         this->RecvDataAsync();
     }

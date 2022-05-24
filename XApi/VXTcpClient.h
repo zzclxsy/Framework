@@ -11,12 +11,14 @@ public:
     virtual ~VXTcpClient(){}
 
     typedef std::function<int (const char *, int)> DataHandler;
+    typedef std::function<void(std::string , int)> HeartHandler;
 
     virtual void SetServerIp(const std::string& ip) = 0;
     virtual void SetServerPort(int port) = 0;
     virtual void SetDataHandler(DataHandler handler) = 0;
     virtual void SetPacketDecoder(VXPacketCodec * decoder) = 0;
     virtual void SetHeartCheck() = 0;
+    virtual void SetHeartHander(HeartHandler hander) =0;
     virtual bool Start() = 0;
     virtual void Stop() = 0;
 
