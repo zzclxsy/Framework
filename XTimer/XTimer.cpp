@@ -12,8 +12,9 @@ XTimer::XTimer():m_iowork(io_ctx)
 
 XTimer::~XTimer()
 {
-	if (m_timer)
-		 delete m_timer;
+    io_ctx.stop();
+    m_thread.join();
+    delete m_timer;
 }
 
 void XTimer::Start()
@@ -49,5 +50,6 @@ void XTimer::workPrc()
 void XTimer::run()
 {
     io_ctx.run();
+    XINFO << "XTimer finished";
 }
 
