@@ -172,8 +172,7 @@ TimerManager *TimerManager::instant()
 void TimerManager::run()
 {
     mb_start = true;
-    std::thread th(std::bind(&TimerManager::workPrc,this));
-    th.detach();
+    new std::thread(std::bind(&TimerManager::workPrc,this));
 }
 
 int TimerManager::Cascade(int offset, int index)

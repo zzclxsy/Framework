@@ -8,7 +8,7 @@
 class XTimer
 {
 public:
-    enum TimerType {ONCE, CIRCLE};
+    enum TimerType {ONCE = 0, CIRCLE = 1};
 
     XTimer();
     ~XTimer();
@@ -23,24 +23,22 @@ private:
     void run();
 
 private:
-    friend class TimerManager;
-
-    TimerManager *manager_;
-    TimerType timerType_;
-    boost::function<void(void)> timerFun_;
-    unsigned interval_;
+    TimerType m_timerType;
+    boost::function<void(void)> m_timerFun;
+    unsigned m_interval;
     boost::asio::io_context io_ctx;
     boost::asio::steady_timer *m_timer;
-    bool mb_run;
-    std::thread *mp_thread;
+    std::thread m_thread;
+    bool mb_stop;
+    boost::asio::io_service::work m_iowork;
 };
 
 template<typename Fun>
 void XTimer::SetParam(Fun fun, unsigned interval, XTimer::TimerType timeType)
 {
-    interval_ = interval;
-    timerFun_ = fun;
-    timerType_ = timeType;
+    m_interval = interval;
+    m_timerFun = fun;
+    m_timerType = timeType;
 }
 
 #endif // XTIMER_H

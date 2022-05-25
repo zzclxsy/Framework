@@ -6,3 +6,4 @@ copy XRingBuffer.h E:\include\XFramework
 copy XUtils.h E:\include\XFramework
 
 copy .\\XTask\\XTaskKeys.h E:\include\XFramework
+copy .\\XTimer\\*.h E:\include\XFramework

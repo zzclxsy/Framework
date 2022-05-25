@@ -7,11 +7,11 @@
 
 XTcpClient::XTcpClient()
 {
-     m_worker = nullptr;
-     m_running = false;
-     m_sk= nullptr;
-     mb_heartCheck = false;
-     m_linked = E_TCP_LINK::E_Disconnected;
+	m_worker = nullptr;
+	m_running = false;
+	m_sk = nullptr;
+	mb_heartCheck = false;
+	m_linked = E_TCP_LINK::E_Disconnected;
 }
 
 XTcpClient::~XTcpClient()
@@ -146,11 +146,11 @@ void XTcpClient::WorkerProc()
 
     while ( m_running)
     {
-        if (m_linked == E_Disconnected)
-        {
-            m_sk->close();
-            ConnectAsync();
-        }
+		if (m_linked == E_Disconnected)
+		{
+			m_sk->close();
+			ConnectAsync();
+		}
 
         m_ioctx.run_for(std::chrono::milliseconds(1000));
     }

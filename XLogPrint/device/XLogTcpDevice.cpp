@@ -6,7 +6,7 @@
 
 XLogTcpDevice::XLogTcpDevice()
 {
-
+     
 }
 
 bool XLogTcpDevice::PrintLog(std::string &log, logLevel level)
@@ -58,6 +58,7 @@ bool XLogTcpDevice::initialize(const Json::Value &data)
     }
 
     m_logClient = XCoreApplication::GetApp()->CreateTcpClient();
+
     m_logClient->SetServerIp(m_serverIP);
     m_logClient->SetServerPort(m_serverPort);
     //m_logClient->SetHeartCheck();

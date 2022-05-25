@@ -2,7 +2,7 @@
 #define XTCPHEARTPACKET_H
 #include <functional>
 #include <string>
-#include "XTimer/TimerWheel.h"
+#include "XTimer/XTimer.h"
 #include <memory>
 #include "json/json.h"
 class XTcpHeartPacket
@@ -33,10 +33,9 @@ private:
     closeSocket m_closeSocket;
     heartHander m_heartHander;
     bool mb_recvHeart;
-    TimerWheel::Timer m_sendHeartTimer;
-    TimerWheel::Timer m_timeroutTimer;
-    TimerWheel::Timer m_serverTimer;
-    TimerWheel::TimerManager *mp_timerManager;
+    XTimer m_sendHeartTimer;
+    XTimer m_timeroutTimer;
+    XTimer m_serverTimer;
 };
 
 #endif // XTCPHEARTPACKET_H

@@ -2,67 +2,52 @@
 #include <chrono>
 #include "XLogPrint/XLogPrint.h"
 
-XTimer::XTimer()
+XTimer::XTimer():m_iowork(io_ctx)
 {
+    mb_stop = false;
     m_timer = nullptr;
-    mp_thread = nullptr;
+    m_timer = new boost::asio::steady_timer(io_ctx);
+    m_thread = std::thread(std::bind(&XTimer::run,this));
 }
 
 XTimer::~XTimer()
 {
-    if (m_timer)
-        delete m_timer;
-
-    if (mp_thread)
-    {
-        mb_run = false;
-        mp_thread->join();
-        delete mp_thread;
-    }
+	if (m_timer)
+		 delete m_timer;
 }
 
 void XTimer::Start()
 {
-    if (m_timer == nullptr)
-        m_timer = new boost::asio::steady_timer(io_ctx, boost::asio::chrono::milliseconds(interval_));
-
-
+    m_timer->expires_from_now(boost::asio::chrono::milliseconds(m_interval));
     m_timer->async_wait(std::bind(&XTimer::workPrc,this));
-    mb_run = true;
-    XDEBUG <<"XTimer::Start";
-    mp_thread = new std::thread(std::bind(&XTimer::run,this));
 }
 
 void XTimer::Stop()
 {
+    mb_stop = true;
     m_timer->cancel();
-    mb_run = false;
-    if (mp_thread)
-    {
-        delete mp_thread;
-    }
 }
 
 
 
 void XTimer::workPrc()
 {
-    XDEBUG <<"XTimer::workPrc";
-    timerFun_();
-    if (timerType_ == TimerType::CIRCLE)
+    if (mb_stop)
     {
-        m_timer->expires_at(m_timer->expiry() + boost::asio::chrono::milliseconds(interval_));
+        mb_stop = false;
+        return;
+    }
+
+    m_timerFun();
+    if (m_timerType == TimerType::CIRCLE)
+    {
+        m_timer->expires_at(m_timer->expiry() + boost::asio::chrono::milliseconds(m_interval));
         m_timer->async_wait(std::bind(&XTimer::workPrc,this));
     }
 }
 
 void XTimer::run()
 {
-    XDEBUG <<"XTimer::run";
-    while (mb_run)
-    {
-        io_ctx.run();
-         XDEBUG <<"XTimer::while";
-    }
+    io_ctx.run();
 }
 

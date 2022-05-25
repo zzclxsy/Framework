@@ -1,20 +1,14 @@
 #include "XTcpHeartPacket.h"
 #include "XLogPrint/XLogPrint.h"
+#include "XFramework/XTimerEvent.h"
 #include "XUtils.h"
 XTcpHeartPacket::XTcpHeartPacket()
 {
     mb_recvHeart = false;
-    mp_timerManager = TimerWheel::TimerManager::instant();
 
-    m_sendHeartTimer.setManager(mp_timerManager);
-    m_timeroutTimer.setManager(mp_timerManager);
-    m_serverTimer.setManager(mp_timerManager);
-
-    m_timeroutTimer.SetParam(std::bind(&XTcpHeartPacket::timerOutFunc,this),1000, TimerWheel::Timer::ONCE);
-    m_serverTimer.SetParam(std::bind(&XTcpHeartPacket::ServerTimerOutFunc,this),6000,TimerWheel::Timer::ONCE);
+    m_timeroutTimer.SetParam(std::bind(&XTcpHeartPacket::timerOutFunc,this),1000, XTimer::ONCE);
+    m_serverTimer.SetParam(std::bind(&XTcpHeartPacket::ServerTimerOutFunc,this),6000,XTimer::ONCE);
     m_sendHeartTimer.SetParam(std::bind(&XTcpHeartPacket::SendHeartFunc,this),3000);
-
-    mp_timerManager->run();
 }
 
 void XTcpHeartPacket::SetParameter(closeSocket close, sendCallback send)
@@ -55,9 +49,10 @@ bool XTcpHeartPacket::OnServerRecv(char *data, int length)
     if (analysisPacket(root))
     {
         SendPacket();
+        m_serverTimer.Stop();
         m_serverTimer.Start();
         if (m_heartHander)
-            m_heartHander("", true);
+            m_heartHander("rec", true);
         return true;
     }
     return false;
@@ -111,7 +106,6 @@ void XTcpHeartPacket::timerOutFunc()
 
 void XTcpHeartPacket::ServerTimerOutFunc()
 {
-
     if (m_heartHander)
         m_heartHander("", false);
 
