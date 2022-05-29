@@ -7,6 +7,8 @@
 #include "XNetwork/XTcpClient.h"
 #include "XNetwork/XTcpServer.h"
 #include "XTask/XTcpTaskManager.h"
+#include "XTask/XMQTTTaskManager.h"
+#include "XMQTT/XMQTTServer.h"
 #include <assert.h>
 #include <string>
 #include <mutex>
@@ -105,6 +107,20 @@ std::shared_ptr<VXTcpClient> XCoreApplication::CreateTcpClient()
 std::shared_ptr<VXTcpServer> XCoreApplication::CreateTcpServer()
 {
     return std::make_shared<XTcpServer>();
+}
+
+void XCoreApplication::initMQTTModule(Json::Value &cfgdata)
+{
+    this->Register(new X_FACTORY_NAME(XMQTTServer));
+    VXModule *module = this->GetXService<XMQTTServer>(MODULE_MQTTSERVER);
+    module->Initialize(cfgdata);
+}
+
+void XCoreApplication::initMQTTTaskModule(Json::Value &cfg)
+{
+    this->Register(new X_FACTORY_NAME(XMQTTTaskManager));
+    VXModule *module = this->GetXService<XMQTTTaskManager>(MODULE_MQTTTASK);
+    module->Initialize(cfg);
 }
 
 void XCoreApplication::addEvent(XEvent *event)

@@ -1,6 +1,7 @@
 HEADERS += \
     $$PWD/VXApi.h \
     $$PWD/VXFactory.h \
+    $$PWD/VXMQTTServer.h \
     $$PWD/VXModule.h \
     $$PWD/VXModuleConfig.h \
     $$PWD/VXModuleTest.h \

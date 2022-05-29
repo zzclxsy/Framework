@@ -1,0 +1,7 @@
+{
+	"mqtt":{
+		"ServerAddress":"127.0.0.1:1883",
+		"QOS":1,
+		"ClientID":"CMS-0"
+	}
+}

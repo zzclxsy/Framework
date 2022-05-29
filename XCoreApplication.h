@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <json/json.h>
 class VXTcpServer;
 class VXTcpClient;
 class VXFactory;
@@ -19,6 +20,9 @@ public:
 
     std::shared_ptr<VXTcpClient> CreateTcpClient();
     std::shared_ptr<VXTcpServer> CreateTcpServer();
+
+    void initMQTTModule(Json::Value &cfgdata);
+    void initMQTTTaskModule(Json::Value &);
 
     static XCoreApplication *GetApp();
 

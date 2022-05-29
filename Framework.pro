@@ -21,6 +21,7 @@ include(./XApi/XApi.pri)
 include(./XConfig/XConfig.pri)
 include(./XTask/XTask.pri)
 include(./XTimer/XTimer.pri)
+include(./XMQTT/XMQTT.pri)
 # Default rules for deployment.
 unix {
     target.path = $$[QT_INSTALL_PLUGINS]/generic
@@ -52,5 +53,9 @@ SOURCES += \
 
 #boost库头文件，需要另行添加
 INCLUDEPATH += E:\\include
+INCLUDEPATH += E:\\include\\mqtt
 #JsonCpp头文件
 INCLUDEPATH += $$PWD/JsonCpp/include
+
+DISTFILES += \
+    AppConfig.json
