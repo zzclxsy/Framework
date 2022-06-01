@@ -28,34 +28,38 @@ unix {
 }
 !isEmpty(target.path): INSTALLS += target
 
+
 CONFIG(debug, debug|release) {
     TARGET = libFrameworkd
-    DESTDIR = E:\\lib\\x64\\debug\\XFramework
+    DESTDIR = $$PWD/../lib/debug
 } else {
     TARGET = libFramework
-    DESTDIR = E:\\lib\\x64\\release\\XFramework
+    DESTDIR = $$PWD/../lib/release
 }
+
 
 
 HEADERS += \
     XCoreApplication.h \
+    XHttpBaseDef.h \
+    XHttpHelper.h \
+    XHttpKeys.h \
     XObjectManager.h \
     XRingBuffer.h \
+    XServer.h \
     XUtils.h
 
 SOURCES += \
     XCoreApplication.cpp \
+    XHttpHelper.cpp \
     XObjectManager.cpp \
     XRingBuffer.cpp \
+    XServer.cpp \
     XUtils.cpp
-
-
-
-#boost库头文件，需要另行添加
-INCLUDEPATH += E:\\include
-INCLUDEPATH += E:\\include\\mqtt
-#JsonCpp头文件
-INCLUDEPATH += $$PWD/JsonCpp/include
 
 DISTFILES += \
     AppConfig.json
+
+INCLUDEPATH += $$PWD/../ThirdParty/inc
+#JsonCpp头文件
+INCLUDEPATH += $$PWD/JsonCpp/include

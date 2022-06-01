@@ -1,6 +1,5 @@
 #include "XTcpHeartPacket.h"
 #include "XLogPrint/XLogPrint.h"
-#include "XFramework/XTimerEvent.h"
 #include "XUtils.h"
 XTcpHeartPacket::XTcpHeartPacket()
 {

@@ -21,7 +21,7 @@ bool XMQTTTaskManager::Initialize(const Json::Value &)
         return false;
     }
 
-    mp_mqttServer->AddTopical("MQTT Examples",std::bind(&XMQTTTaskManager::TaskHandler,this,std::placeholders::_1));
+    mp_mqttServer->addTopic("MQTT Examples",std::bind(&XMQTTTaskManager::TaskHandler,this,std::placeholders::_1));
     return true;
 }
 

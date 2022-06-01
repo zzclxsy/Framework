@@ -1,0 +1,8 @@
+#ifndef XHTTPBASEDEF_DEF
+#define XHTTPBASEDEF_DEF
+
+#define MAX_DUT_COUNT 99
+#define DUT_LOG_INDEX_FORMAT 2
+#define DUT_LOG_WORKER_COUNT 2
+
+#endif
