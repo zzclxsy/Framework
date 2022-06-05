@@ -1,6 +1,7 @@
 #include "XTcpHeartPacket.h"
 #include "XLogPrint/XLogPrint.h"
 #include "XUtils.h"
+
 XTcpHeartPacket::XTcpHeartPacket()
 {
     mb_recvHeart = false;

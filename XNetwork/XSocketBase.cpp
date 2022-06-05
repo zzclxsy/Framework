@@ -1,5 +1,5 @@
 #include "XSocketBase.h"
-
+#include "XLogPrint/XLogPrint.h"
 
 XSocketClient::XSocketClient()
 {
@@ -72,5 +72,10 @@ void XSocketServer::SetDataHandler(DataHandler handler)
 
 void XSocketServer::SetPacketCodec(VXPacketCodec *decoder)
 {
-     m_codec = decoder;
+    m_codec = decoder;
+}
+
+void XSocketServer::SetHeartHander(HeartHandler hander)
+{
+    m_heartHandler = hander;
 }

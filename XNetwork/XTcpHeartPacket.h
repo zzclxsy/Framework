@@ -22,7 +22,7 @@ public:
 
     bool analysisPacket(Json::Value&);
     void SendPacket();
-
+    heartHander m_heartHander;
 private:
     void WorkerProc();
     void timerOutFunc();
@@ -31,7 +31,7 @@ private:
 private:
     sendCallback m_sendCallback;
     closeSocket m_closeSocket;
-    heartHander m_heartHander;
+
     bool mb_recvHeart;
     XTimer m_sendHeartTimer;
     XTimer m_timeroutTimer;

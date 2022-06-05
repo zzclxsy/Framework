@@ -51,11 +51,13 @@ public:
     virtual ~XSocketServer(){};
 
     typedef std::function<int (VXSocketSession *, const char *, int)> DataHandler;
+    typedef std::function<void(std::string , int)> HeartHandler;
 
     virtual void SetIpAddress(const std::string& ip);
     virtual void SetPort(int port);
     virtual void SetDataHandler(DataHandler handler);
     virtual void SetPacketCodec(VXPacketCodec * decoder);
+    virtual void SetHeartHander(HeartHandler hander);
 
 protected:
     IOContext m_ioctx;
@@ -63,6 +65,7 @@ protected:
     std::string m_bindIp;
     int m_bindPort;
     DataHandler m_handler;
+    HeartHandler m_heartHandler;
     VXPacketCodec * m_codec;
 };
 

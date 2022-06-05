@@ -99,6 +99,8 @@ void XTcpServer::OnSend(XTcpSession *session, char *data, int length)
 
 void XTcpServer::OnDisconnect(XTcpSession *session)
 {
+    //现阶段只能有一个客户端，未来如果要实现多个，再TODO
+    m_heartHandler("",false);
     XTcpSession * removedSession = nullptr;
     m_lock.lock();
     m_sessionMap.erase(session);
@@ -116,21 +118,10 @@ void XTcpServer::OnDisconnect(XTcpSession *session)
     }
 }
 
-void XTcpServer::SetHeartHander(VXTcpServer::HeartHandler hander)
-{
-    m_handle = hander;
-}
-
 std::set<XTcpSession *> XTcpServer::totalTcpSession()
 {
     return  m_sessionMap;
 }
-
-void XTcpServer::SetHeartCheck()
-{
-    mb_heartCheck = true;
-}
-
 
 
 XTcpSession::XTcpSession(XTcpServer *tcpServer)
@@ -143,10 +134,9 @@ XTcpSession::XTcpSession(XTcpServer *tcpServer)
 
     m_worker = nullptr;
     m_running = false;
-    m_link = linking;
-
+    m_tcpServer->m_heartHandler("",true);
     m_heartPacket.SetParameter(std::bind(&XTcpSession::closeSocket,this), std::bind(&XTcpSession::SendDataAsync,this,std::placeholders::_1,std::placeholders::_2));
-    m_heartPacket.setHeartHander(m_tcpServer->m_handle);
+    m_heartPacket.setHeartHander(std::bind(&XTcpSession::heartHandleCallBack,this, std::placeholders::_1,std::placeholders::_2));
 }
 
 XTcpSession::~XTcpSession()
@@ -330,7 +320,12 @@ int XTcpSession::SendDataAsync(const char *data, int length)
 
 void XTcpSession::closeSocket()
 {
-    m_link = disLink;
+
+}
+
+void XTcpSession::heartHandleCallBack(std::string str, bool result)
+{
+    m_tcpServer->m_heartHandler(str, result);
 }
 
 void XTcpSession::OnRecv(const boost::system::error_code &error, size_t bytesTransferred)
@@ -339,6 +334,7 @@ void XTcpSession::OnRecv(const boost::system::error_code &error, size_t bytesTra
     {
         XERROR << "XTcpSession::OnRecv failed, error code:" << error;
         m_tcpServer->OnDisconnect(this);
+
     }
     else if (bytesTransferred > 0)
     {

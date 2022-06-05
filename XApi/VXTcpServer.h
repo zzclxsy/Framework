@@ -11,7 +11,7 @@ public:
     virtual ~VXTcpServer(){};
 
     typedef std::function<int (VXSocketSession *, const char *, int)> DataHandler;
-       typedef std::function<void(std::string , int)> HeartHandler;
+    typedef std::function<void(std::string , int)> HeartHandler;
 
     virtual void SetIpAddress(const std::string& ip) = 0;
     virtual void SetPort(int port) = 0;

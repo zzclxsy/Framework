@@ -31,10 +31,10 @@ unix {
 
 CONFIG(debug, debug|release) {
     TARGET = libFrameworkd
-    DESTDIR = $$PWD/../lib/debug
+    DESTDIR = E:\\lib\\x64\\debug\\XFramework
 } else {
     TARGET = libFramework
-    DESTDIR = $$PWD/../lib/release
+    DESTDIR = E:\\lib\\x64\\release\\XFramework
 }
 
 
@@ -60,6 +60,8 @@ SOURCES += \
 DISTFILES += \
     AppConfig.json
 
-INCLUDEPATH += $$PWD/../ThirdParty/inc
+#boost库头文件，需要另行添加
+INCLUDEPATH += E:\\include
+INCLUDEPATH += E:\\include\\mqtt
 #JsonCpp头文件
 INCLUDEPATH += $$PWD/JsonCpp/include
